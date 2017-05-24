@@ -17,6 +17,7 @@
 
 using namespace fastjet ;
 
+
 int main(int argc , char** argv)
 {
 	TH1D* higgsHisto = new TH1D("higgs","", 400 , 0 , 200) ;
@@ -32,10 +33,13 @@ int main(int argc , char** argv)
 
 	TH2D* dHisto = new TH2D("2dHisto","", 400 , 0 , 200 , 400 , 0 , 200) ;
 
+	TH1D* neutrinoEnergyHisto = new TH1D("neutrinoEnergy","", 20000 , 0 , 200) ;
+
 	for ( int num = 1 ; num < 26 ; ++num )
 	{
 		std::stringstream toto ;
-		toto << "/home/garillot/files/Higgs/mILD_o2_v05.E250-TDR_ws.Pqqh.Gwhizard-1_95.eL.pR.I106485.001.p" ;
+		//		toto << "/home/garillot/files/Higgs/mILD_o2_v05.E250-TDR_ws.Pqqh.Gwhizard-1_95.eL.pR.I106485.001.p" ;
+		toto << "/gridgroup/ilc/garillot/files/Higgs/mILD_o2_v05.E250-TDR_ws.Pqqh.Gwhizard-1_95.eL.pR.I106485.001.p" ;
 
 		if ( num < 10 )
 			toto << "00" << num ;
@@ -61,18 +65,22 @@ int main(int argc , char** argv)
 		std::vector<double>* pfoPx = NULL ;
 		std::vector<double>* pfoPy = NULL ;
 		std::vector<double>* pfoPz = NULL ;
+		std::vector<int>* pfoID = NULL ;
 
-						tree->SetBranchAddress("nPfosTotal" , &nPfos) ;
-						tree->SetBranchAddress("pfoEnergies" , &pfoEnergies) ;
-						tree->SetBranchAddress("pfoPx" , &pfoPx) ;
-						tree->SetBranchAddress("pfoPy" , &pfoPy) ;
-						tree->SetBranchAddress("pfoPz" , &pfoPz) ;
+		//						tree->SetBranchAddress("nPfosTotal" , &nPfos) ;
+		//						tree->SetBranchAddress("pfoEnergies" , &pfoEnergies) ;
+		//						tree->SetBranchAddress("pfoPx" , &pfoPx) ;
+		//						tree->SetBranchAddress("pfoPy" , &pfoPy) ;
+		//						tree->SetBranchAddress("pfoPz" , &pfoPz) ;
+		//						tree->SetBranchAddress("pfoPdgCodes" , &pfoID) ;
 
-//		tree->SetBranchAddress("nPfoTargetsTotal" , &nPfos) ;
-//		tree->SetBranchAddress("pfoTargetEnergies" , &pfoEnergies) ;
-//		tree->SetBranchAddress("pfoTargetPx" , &pfoPx) ;
-//		tree->SetBranchAddress("pfoTargetPy" , &pfoPy) ;
-//		tree->SetBranchAddress("pfoTargetPz" , &pfoPz) ;
+		tree->SetBranchAddress("nPfoTargetsTotal" , &nPfos) ;
+		tree->SetBranchAddress("pfoTargetEnergies" , &pfoEnergies) ;
+		tree->SetBranchAddress("pfoTargetPx" , &pfoPx) ;
+		tree->SetBranchAddress("pfoTargetPy" , &pfoPy) ;
+		tree->SetBranchAddress("pfoTargetPz" , &pfoPz) ;
+		tree->SetBranchAddress("pfoTargetPdgCodes" , &pfoID) ;
+
 
 
 		int iEntry = 1 ;
@@ -86,10 +94,20 @@ int main(int argc , char** argv)
 				std::cout << "error sizes" << std::endl ;
 
 
+			double nuEnergy = 0 ;
+
+
 			std::vector< fastjet::PseudoJet > particles ;
 
 			for ( unsigned int i = 0 ; i < static_cast<unsigned int>( nPfos ) ; ++i )
+			{
 				particles.push_back( fastjet::PseudoJet( pfoPx->at(i) , pfoPy->at(i) , pfoPz->at(i) , pfoEnergies->at(i) ) ) ;
+
+				if ( std::abs(pfoID->at(i)) == 12 || std::abs(pfoID->at(i)) == 14 || std::abs(pfoID->at(i)) == 16 )
+					nuEnergy += pfoEnergies->at(i) ;
+			}
+
+			neutrinoEnergyHisto->Fill(nuEnergy) ;
 
 
 			// choose a jet definition
@@ -143,7 +161,7 @@ int main(int argc , char** argv)
 			for ( std::vector< std::pair< std::pair<PseudoJet,PseudoJet> , std::pair<PseudoJet,PseudoJet> > >::iterator it = pairs.begin() ; it != pairs.end() ; ++it )
 			{
 
-//				double tempchi2 = std::abs( (it->first.first + it->first.second).m() - 91.2 ) ;
+				//				double tempchi2 = std::abs( (it->first.first + it->first.second).m() - 91.2 ) ;
 				double tempchi2 = std::abs( (it->first.first + it->first.second).m() - 91.2 ) + std::abs( (it->second.first + it->second.second).m() - 125.0 ) ;
 
 
@@ -172,7 +190,7 @@ int main(int argc , char** argv)
 			double mrec = (250.0 - qqDiJet.e() )*(250.0 - qqDiJet.e() ) - pqq ;
 
 			higgsHisto->Fill( (goodPairIt->second.first + goodPairIt->second.second).m() ) ;
-//			higgsHisto->Fill( std::sqrt(mrec) ) ;
+			//			higgsHisto->Fill( std::sqrt(mrec) ) ;
 			zHisto->Fill( qqDiJet.m() ) ;
 
 			dHisto->Fill( qqDiJet.m() , (goodPairIt->second.first + goodPairIt->second.second).m() ) ;
@@ -197,6 +215,13 @@ int main(int argc , char** argv)
 	//	gStyle->SetOptStat(0) ;
 
 	dHisto->Draw("colz") ;
+
+
+	TCanvas* c3 = new TCanvas("c3","c3",900,900) ;
+	c3->cd() ;
+	//	gStyle->SetOptStat(0) ;
+
+	neutrinoEnergyHisto->Draw() ;
 
 
 
