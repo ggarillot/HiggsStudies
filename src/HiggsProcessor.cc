@@ -11,7 +11,6 @@
 
 #include <IMPL/ReconstructedParticleImpl.h>
 #include <IMPL/MCParticleImpl.h>
-
 #include <IMPL/LCRelationImpl.h>
 #include <UTIL/LCRelationNavigator.h>
 
@@ -38,15 +37,20 @@ HiggsProcessor::HiggsProcessor() : Processor("HiggsProcessor")
 								recoPartColName ,
 								std::string("PandoraPFOs") ) ;
 
-	registerProcessorParameter( "ReconstructedParticlesCollectionName" ,
-								"Name of the reconstructed particles collection" ,
+	registerProcessorParameter( "MCParticlesCollectionName" ,
+								"Name of the mc particles collection" ,
 								mcPartColName ,
 								std::string("MCParticlesSkimmed") ) ;
 
-	registerProcessorParameter( "ReconstructedParticlesCollectionName" ,
-								"Name of the reconstructed particles collection" ,
+	registerProcessorParameter( "LinkCollectionName" ,
+								"Name of the mc truth link collection" ,
 								linkColName ,
 								std::string("RecoMCTruthLink") ) ;
+
+	registerProcessorParameter( "CenterOfMassEnergy" ,
+								"CenterOfMassEnergy" ,
+								sqrtS ,
+								250.0 ) ;
 
 }
 
@@ -57,20 +61,46 @@ void HiggsProcessor::init()
 	tree = new TTree("tree" , "tree") ;
 
 	tree->Branch("decayID" , &decayID) ;
+	tree->Branch("totalEnergy" , &totalEnergy) ;
 	tree->Branch("energy4Jets" , &energy4Jets) ;
 	tree->Branch("ISREnergy" , &ISREnergy) ;
 	tree->Branch("yValueVec" , &yValueVec) ;
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
 	tree->Branch("recMass2" , &recMass2) ;
+	tree->Branch("hDiJetMass" , &hDiJetMass) ;
+	tree->Branch("zEnergy" , &zEnergy) ;
+	tree->Branch("cosAngleBetweenZJets" , &cosAngleBetweenZJets) ;
+	tree->Branch("cosAngleBetweenHJets" , &cosAngleBetweenHJets) ;
+	tree->Branch("zPhi" , &zPhi) ;
+	tree->Branch("zRap" , &zRap) ;
+	tree->Branch("hPhi" , &hPhi) ;
+	tree->Branch("hRap" , &hRap) ;
 
 	tree->Branch("ww12mass" , &ww12mass) ;
 	tree->Branch("ww34mass" , &ww34mass) ;
 	tree->Branch("zz12mass" , &zz12mass) ;
 	tree->Branch("zz34mass" , &zz34mass) ;
 
+	tree->Branch("zPurity" , &zPurity) ;
+	tree->Branch("hCont" , &hCont) ;
+
+	tree->Branch("idealRecoZmass" , &idealRecoZmass) ;
+	tree->Branch("idealRecoHmass" , &idealRecoHmass) ;
+	tree->Branch("idealRecoRecMass" , &idealRecoRecMass) ;
+
+
 	tree->Branch("zMassMC" , &zMassMC) ;
 	tree->Branch("recMassMC" , &recMassMC) ;
+	tree->Branch("zEnergyMC" , &zEnergyMC) ;
+
+	tree->Branch("cosAngleBetweenZJetsMC" , &cosAngleBetweenZJetsMC) ;
+	tree->Branch("cosAngleBetweenHJetsMC" , &cosAngleBetweenHJetsMC) ;
+	tree->Branch("zPhiMC" , &zPhiMC) ;
+	tree->Branch("zRapMC" , &zRapMC) ;
+	tree->Branch("hPhiMC" , &hPhiMC) ;
+	tree->Branch("hRapMC" , &hRapMC) ;
+
 	tree->Branch("deltaP" , &deltaP) ;
 	tree->Branch("pX" , &pX) ;
 	tree->Branch("pY" , &pY) ;
@@ -82,7 +112,7 @@ void HiggsProcessor::init()
 
 std::vector<int> HiggsProcessor::findDecayMode(LCCollection* mcCol)
 {
-//	std::cout << "HiggsProcessor::findDecayMode(LCCollection* mcCol)" << std::endl ;
+	//	std::cout << "HiggsProcessor::findDecayMode(LCCollection* mcCol)" << std::endl ;
 
 	std::vector<int> toReturn ;
 	if ( mcCol->getNumberOfElements() < 10 )
@@ -93,7 +123,7 @@ std::vector<int> HiggsProcessor::findDecayMode(LCCollection* mcCol)
 	if ( part->getPDG() != 25 )
 	{
 		std::cout << "Error in HiggsProcessor::findDecayMode : Not a Higgs : " << part->getPDG() << std::endl ;
-//		throw ;
+		//		throw ;
 	}
 
 	MCParticleVec vec = part->getDaughters() ;
@@ -123,14 +153,14 @@ CLHEP::HepLorentzVector HiggsProcessor::getZLorentzVectorMC(LCCollection* mcCol)
 		return CLHEP::HepLorentzVector(0,0,0,0) ;
 	}
 
-	const double* p1d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 2 ) )->getMomentum() ;
-	const double* p2d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 3 ) )->getMomentum() ;
+	const double* p1d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 11 ) )->getMomentum() ;
+	const double* p2d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 12 ) )->getMomentum() ;
 
 	CLHEP::Hep3Vector p1( p1d[0] , p1d[1] , p1d[2] ) ;
 	CLHEP::Hep3Vector p2( p2d[0] , p2d[1] , p2d[2] ) ;
 	CLHEP::Hep3Vector p = p1+p2 ;
 
-	double e = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 2 ) )->getEnergy() + dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 3 ) )->getEnergy() ;
+	double e = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 11 ) )->getEnergy() + dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 12 ) )->getEnergy() ;
 
 
 	//	const double* p1d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 10 ) )->getMomentum() ;
@@ -166,48 +196,100 @@ CLHEP::HepLorentzVector HiggsProcessor::getHLorentzVectorMC(LCCollection* mcCol)
 	if ( id != 25 )
 	{
 		std::cout << "Error in HiggsProcessor::findDecayMode : Not a Higgs : " << id << std::endl ;
-//		throw ;
+		//		throw ;
 	}
 
 	return CLHEP::HepLorentzVector(p , e) ;
 }
 
-
-void HiggsProcessor::getLinkTest(LCCollection* linkCol)
+double HiggsProcessor::getZEnergyMC()
 {
-	UTIL::LCRelationNavigator relNav(linkCol) ;
+	MCParticleImpl* part1 = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 11 ) )  ;
+	MCParticleImpl* part2 = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 12 ) )  ;
 
-//	std::cout << "from type : " << relNav.getFromType() << std::endl ;
-//	std::cout << "  to type : " << relNav.getToType() << std::endl ;
+	return part1->getEnergy() + part2->getEnergy() ;
+}
 
-//	std::cout << linkCol->getNumberOfElements() << std::endl ;
+double HiggsProcessor::getCosAngleBetweenZJetsMC()
+{
+	MCParticleImpl* part1 = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 11 ) )  ;
+	MCParticleImpl* part2 = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 12 ) )  ;
 
-	LCRelationImpl* link = dynamic_cast<LCRelationImpl*>( linkCol->getElementAt(0) ) ;
-	ReconstructedParticleImpl* part = dynamic_cast<ReconstructedParticleImpl*>( link->getFrom() ) ;
+	CLHEP::Hep3Vector p1( part1->getMomentum()[0] , part1->getMomentum()[1] , part1->getMomentum()[2] ) ;
+	CLHEP::Hep3Vector p2( part2->getMomentum()[0] , part2->getMomentum()[1] , part2->getMomentum()[2] ) ;
 
-	std::cout << relNav.getRelatedFromObjects(part).size() << std::endl ;
-//	std::cout << dynamic_cast<MCParticleImpl*>( relNav.getRelatedFromObjects(part).at(0) )->getPDG() << std::endl ;
+	return ( p1.dot(p2) )/(p1.mag()*p2.mag()) ;
 }
 
 
-std::map<int,float> HiggsProcessor::mcOriginOfJet(fastjet::PseudoJet& jet)
+void HiggsProcessor::computeOriginMap()
+{
+	originMap.clear() ;
+	for( int i = 0 ; i < linkCol->getNumberOfElements() ; ++i )
+	{
+		LCRelationImpl* link = dynamic_cast<LCRelationImpl*>( linkCol->getElementAt(i) ) ;
+		ReconstructedParticleImpl* recoPart = dynamic_cast<ReconstructedParticleImpl*>( link->getFrom() ) ;
+		MCParticleImpl* mcPart = dynamic_cast<MCParticleImpl*>( link->getTo() ) ;
+
+
+		MCParticleImpl* mcPartParent = mcPart ;
+		int mcPartOrigin = mcPartParent->getPDG() ;
+
+		while ( true )
+		{
+			MCParticleVec parentVec = mcPartParent->getParents() ;
+
+			if ( parentVec.size() )
+			{
+				mcPartParent = dynamic_cast<MCParticleImpl*>( parentVec.at(0) ) ;
+				mcPartOrigin = mcPartParent->getPDG() ;
+			}
+			else
+				break ;
+		}
+
+		originMap[recoPart].insert( std::make_pair(mcPartOrigin, recoPart->getEnergy()*link->getWeight()) ) ;
+	}
+}
+
+
+
+
+std::map<int,float> HiggsProcessor::mcOriginOfParticle(ReconstructedParticleImpl* recoPart)
 {
 	std::map<int,float> toReturn ;
-//	std::vector<fastjet::PseudoJet> particlesOfJet = jet.constituents() ;
 
-	LCCollection* linkCol = currentEvt->getCollection( linkColName ) ;
+	std::map<ReconstructedParticleImpl* , std::map<int,float> >::iterator it = originMap.find(recoPart) ;
 
-	LCRelationImpl* link = dynamic_cast<LCRelationImpl*>( linkCol->getElementAt(0) ) ;
-	ReconstructedParticleImpl* recoPart = dynamic_cast<ReconstructedParticleImpl*>( link->getFrom() ) ;
-	MCParticleImpl* mcPart = dynamic_cast<MCParticleImpl*>( link->getTo() ) ;
+	if ( it != originMap.end() )
+		return it->second ;
+	else
+	{
+		std::cout << "no mc origin for particle" << std::endl ;
+		return toReturn ;
+	}
+}
 
 
-	std::cout << recoPart->getEnergy() << std::endl ;
+std::map<int,float> HiggsProcessor::mcOriginOfJet(const fastjet::PseudoJet& jet , fastjet::ClusterSequence& cs)
+{
+	std::map<int,float> toReturn ;
 
+	std::vector<fastjet::PseudoJet> particlesInJet = cs.constituents(jet) ;
 
+	for( std::vector<fastjet::PseudoJet>::const_iterator it = particlesInJet.begin() ; it != particlesInJet.end() ; ++it )
+	{
+		std::map<int,float> mcOrigin = mcOriginOfParticle( recoParticles.at( it->user_index() ) ) ;
+
+		for( std::map<int,float>::const_iterator jt = mcOrigin.begin() ; jt != mcOrigin.end() ; ++jt )
+			toReturn[jt->first] += jt->second ;
+	}
+
+	//	std::cout << jet.e() << std::endl ;
+	//	for( std::map<int,float>::const_iterator jt = toReturn.begin() ; jt != toReturn.end() ; ++jt )
+	//		std::cout << jt->first << " " << jt->second << std::endl ;
 
 	return toReturn ;
-
 }
 
 
@@ -221,13 +303,194 @@ void HiggsProcessor::processRunHeader(LCRunHeader* run)
 void HiggsProcessor::processEvent(LCEvent* evt)
 {
 	currentEvt = evt ;
+	mcCol = currentEvt->getCollection( mcPartColName ) ;
+	linkCol = currentEvt->getCollection( linkColName ) ;
+	recoCol = currentEvt->getCollection( recoPartColName ) ;
+
+	computeOriginMap() ;
+
+	particles.clear() ;
+	recoParticles.clear() ;
+	for ( int i = 0 ; i < recoCol->getNumberOfElements() ; ++i )
+	{
+		ParticleInfo* partInfo = new ParticleInfo ;
+		ReconstructedParticleImpl* recoPart = dynamic_cast<ReconstructedParticleImpl*>( recoCol->getElementAt(i) ) ;
+		partInfo->setRecoParticle( recoPart ) ;
+		partInfo->setId(i) ;
+
+		std::map<int,float> mcorig = mcOriginOfParticle( partInfo->recoParticle() ) ;
+
+		double temp = 0 ;
+		int id = 0 ;
+		for ( std::map<int,float>::const_iterator jt = mcorig.begin() ; jt != mcorig.end() ; ++jt )
+		{
+			if ( jt->second > temp )
+			{
+				temp = jt->second ;
+				id = jt->first ;
+			}
+		}
+		partInfo->setOrigin(id) ;
+
+		fastjet::PseudoJet toto( recoPart->getMomentum()[0] , recoPart->getMomentum()[1] , recoPart->getMomentum()[2] , recoPart->getEnergy() ) ;
+		toto.set_user_index(i) ;
+		toto.set_user_info(partInfo) ;
+		particles.push_back( toto ) ;
+		recoParticles.push_back( recoPart ) ;
+	}
+
+	std::vector<fastjet::PseudoJet> zParticles ;
+	std::vector<fastjet::PseudoJet> hParticles ;
+
+	totalEnergy = 0 ;
+
+	for ( std::vector<fastjet::PseudoJet>::const_iterator it = particles.begin() ; it != particles.end() ; ++it )
+	{
+		totalEnergy += it->E() ;
+		if ( std::abs( it->user_info<ParticleInfo>().origin() ) <= 6 )
+			zParticles.push_back(*it) ;
+
+		if ( it->user_info<ParticleInfo>().origin() == 25 )
+			hParticles.push_back(*it) ;
+	}
+
+
+//	double rZ = 3.14159265/2.0 ;
+		double rZ = 6 ;
+
+	fastjet::JetDefinition jetDefZ(fastjet::kt_algorithm , rZ) ;
+	fastjet::ClusterSequence csZ(zParticles, jetDefZ) ;
+
+	int targetNjetsZ = zParticles.size() ;
+	if ( targetNjetsZ > 2 )
+		targetNjetsZ = 2 ;
+
+	std::vector<fastjet::PseudoJet> jetsZ ;
+	std::vector<fastjet::PseudoJet> jetsH ;
+
+	fastjet::PseudoJet zAll ;
+	for ( std::vector<fastjet::PseudoJet>::const_iterator it = zParticles.begin() ; it != zParticles.end() ; ++it )
+		zAll += *it ;
+	jetsZ.push_back(zAll) ;
+
+
+//	jetsZ = sorted_by_pt( csZ.exclusive_jets(2) ) ;
+//	jetsZ = sorted_by_pt( csZ.inclusive_jets() ) ;
+
+
+	fastjet::JetDefinition jetDefH(fastjet::kt_algorithm , 6) ;
+	fastjet::ClusterSequence csH(hParticles, jetDefH) ;
 
 
 
-//	getLinkTest( evt->getCollection("RecoMCTruthLink") ) ;
-//	std::cout << "HiggsProcessor::processEvent(LCEvent * evt)" << std::endl ;
+	fastjet::PseudoJet zAllH ;
+
+	for ( std::vector<fastjet::PseudoJet>::const_iterator it = hParticles.begin() ; it != hParticles.end() ; ++it )
+		zAllH += *it ;
+	jetsH.push_back(zAllH) ;
+
+	jetsH = sorted_by_pt( csH.exclusive_jets_up_to(2) ) ;
+
+	if ( jetsH.size() < 2 )
+		cosAngleBetweenHJetsMC = 1 ;
+	else
+	{
+		CLHEP::Hep3Vector p1( jetsH.at(0).px() , jetsH.at(0).py() , jetsH.at(0).pz() ) ;
+		CLHEP::Hep3Vector p2( jetsH.at(1).px() , jetsH.at(1).py() , jetsH.at(1).pz() ) ;
+
+		cosAngleBetweenHJetsMC = ( p1.dot(p2) )/(p1.mag()*p2.mag()) ;
+	}
+
+
+
+	fastjet::PseudoJet idealZDiJet = fastjet::PseudoJet(0,0,0,0) ;
+	fastjet::PseudoJet idealHDiJet = fastjet::PseudoJet(0,0,0,0) ;
+
+	for ( unsigned int i = 0 ; i < jetsZ.size() ; ++i )
+		idealZDiJet += jetsZ.at(i) ;
+
+	for ( unsigned int i = 0 ; i < jetsH.size() ; ++i )
+		idealHDiJet += jetsH.at(i) ;
+
+	zPhiMC = idealZDiJet.phi() ;
+	zRapMC = idealZDiJet.pseudorapidity() ;
+
+	hPhiMC = idealHDiJet.phi() ;
+	hRapMC = idealHDiJet.pseudorapidity() ;
+
+/*
+	double etotz = 0 ;
+	for ( std::vector<fastjet::PseudoJet>::const_iterator it = zParticles.begin() ; it != zParticles.end() ; ++it )
+		etotz += it->E() ;
+
+	std::cout << "energy tot Z : " << etotz << std::endl ;
+	std::cout << "energy jet Z : " << idealZDiJet.E() << std::endl ;
+
+	std::cout << "nParticlesTOT : " << zParticles.size() << std::endl ;
+	std::cout << "nParticlesInCS : " << csZ.n_particles() << std::endl ;
+
+
+
+	std::vector<fastjet::PseudoJet> zParticlesInJet ;
+	for ( unsigned int i = 0 ; i < jetsZ.size() ; ++i )
+	{
+		std::vector<fastjet::PseudoJet> jet = csZ.constituents( jetsZ.at(i) ) ;
+		zParticlesInJet.insert( zParticlesInJet.end() , jet.begin() , jet.end() ) ;
+	}
+
+	std::cout << "nParticleJet : " << zParticlesInJet.size() << std::endl ;
+	std::cout << "nParticlesNotInJet : " << csZ.unclustered_particles().size() << std::endl ;
+
+	std::cout << "zParticles : " << std::endl ;
+	for( std::vector<fastjet::PseudoJet>::const_iterator it = zParticles.begin() ; it != zParticles.end() ; ++it )
+	{
+		bool found = false ;
+		int id = it->user_index() ;
+
+		for( std::vector<fastjet::PseudoJet>::const_iterator jt = zParticlesInJet.begin() ; jt != zParticlesInJet.end() ; ++jt )
+		{
+			if ( jt->user_index() == id )
+			{
+				found = true ;
+				break ;
+			}
+		}
+
+		if ( found )
+			std::cout << "\e[1m" ;
+
+		std::cout << it->user_index() << " " << it->E() << " (" << it->px() << " , " << it->py() << " , " << it->pz() << ")"  ;
+
+		if ( found )
+			std::cout << "\e[0m" ;
+
+		std::cout << std::endl ;
+	}
+*/
+
+	zEnergyMC = getZEnergyMC() ;
+	cosAngleBetweenZJetsMC = getCosAngleBetweenZJetsMC() ;
+
+
+	double pt = 2*std::sqrt(sqrtS*sqrtS/4.0 - 511e-6*511e-6)*std::sin(7e-3) ;
+
+	CLHEP::Hep3Vector totP(pt,0,0) ;
+
+
+	idealRecoZmass = idealZDiJet.m() ;
+	idealRecoHmass = idealHDiJet.m() ;
+	CLHEP::Hep3Vector idealPZrec( idealZDiJet.px() , idealZDiJet.py() , idealZDiJet.pz() ) ;
+
+	idealRecoRecMass = std::sqrt( (sqrtS - idealZDiJet.e())*(sqrtS - idealZDiJet.e()) - ( idealPZrec.mag2() + totP.mag2() -2*idealPZrec.dot(totP) ) ) ;
+
+
 	using fastjet::PseudoJet ;
 	std::vector<int> vec = findDecayMode( evt->getCollection(mcPartColName) ) ;
+
+	//	std::cout << std::endl ;
+	//	for ( unsigned int i = 0 ; i < vec.size() ; ++i )
+	//		std::cout << vec.at(i) << " " ;
+	//	std::cout << std::endl ;
 
 	ISREnergy = getISREnergy( evt->getCollection(mcPartColName) ) ;
 
@@ -237,14 +500,11 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	CLHEP::Hep3Vector zP = zVec.getV() ;
 	CLHEP::Hep3Vector zH = hVec.getV() ;
 
-	double sqrtS = 250 ;
-	double pt = 2*std::sqrt(sqrtS*sqrtS/4.0 - 511e-6*511e-6)*std::sin(7e-3) ;
 
-	CLHEP::Hep3Vector totP(pt,0,0) ;
 
 	zMassMC = zVec.m() ;
 
-	recMassMC = std::sqrt( (250 - zVec.e())*(250 - zVec.e()) - ( zP.mag2() + totP.mag2() -2*zP.dot(totP) ) ) ;
+	recMassMC = std::sqrt( (sqrtS - zVec.e())*(sqrtS - zVec.e()) - ( zP.mag2() + totP.mag2() -2*zP.dot(totP) ) ) ;
 
 
 	deltaP = hVec.perp2() + hVec.py()*hVec.py() - zVec.perp2() - zVec.py()*zVec.py() ;
@@ -253,23 +513,19 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	pY = hVec.py() + zVec.py() ;
 	pZ = hVec.pz() + zVec.pz() ;
 
-	LCCollection* recoCol = evt->getCollection("PandoraPFOs") ;
 
-	particles.clear() ;
-	for ( int i = 0 ; i < recoCol->getNumberOfElements() ; ++i )
-	{
-		ReconstructedParticleImpl* part = dynamic_cast<ReconstructedParticleImpl*>( recoCol->getElementAt(i) ) ;
-		particles.push_back( PseudoJet( part->getMomentum()[0] , part->getMomentum()[1] , part->getMomentum()[2] , part->getEnergy() ) ) ;
-	}
+
 
 
 	double R = 3.14159265/2.0;
+//	double R = 0.4 ;
 	fastjet::JetDefinition jet_def(fastjet::kt_algorithm , R) ;
 	fastjet::ClusterSequence cs(particles, jet_def) ;
 
+//	std::cout << cs.inclusive_jets().size() << " jets" << std::endl ;
+//	std::cout << "decay : " << vec.at(0) << std::endl ;
 	std::vector<PseudoJet> jets = sorted_by_pt( cs.exclusive_jets(4) ) ;
 
-	mcOriginOfJet(jets.at(0) ) ;
 
 	energy4Jets = 0.0 ;
 	for ( std::vector<PseudoJet>::const_iterator it = jets.begin() ; it != jets.end() ; ++it )
@@ -288,84 +544,124 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		throw ;
 	}
 
-	std::vector< std::pair<PseudoJet , PseudoJet> > pairs ;
-	pairs.push_back( std::make_pair( jets.at(0)+jets.at(1) , jets.at(2)+jets.at(3) ) ) ;
-	pairs.push_back( std::make_pair( jets.at(0)+jets.at(2) , jets.at(1)+jets.at(3) ) ) ;
-	pairs.push_back( std::make_pair( jets.at(0)+jets.at(3) , jets.at(1)+jets.at(2) ) ) ;
-	pairs.push_back( std::make_pair( jets.at(2)+jets.at(3) , jets.at(0)+jets.at(1) ) ) ;
-	pairs.push_back( std::make_pair( jets.at(1)+jets.at(3) , jets.at(0)+jets.at(2) ) ) ;
-	pairs.push_back( std::make_pair( jets.at(1)+jets.at(2) , jets.at(0)+jets.at(3) ) ) ;
+
+	std::vector< std::pair<DiJet,DiJet> > diJets ;
+	diJets.push_back( std::make_pair( DiJet(jets.at(0) , jets.at(1)) , DiJet(jets.at(2) , jets.at(3)) ) ) ;
+	diJets.push_back( std::make_pair( DiJet(jets.at(0) , jets.at(2)) , DiJet(jets.at(1) , jets.at(3)) ) ) ;
+	diJets.push_back( std::make_pair( DiJet(jets.at(0) , jets.at(3)) , DiJet(jets.at(1) , jets.at(2)) ) ) ;
+	diJets.push_back( std::make_pair( DiJet(jets.at(2) , jets.at(3)) , DiJet(jets.at(0) , jets.at(1)) ) ) ;
+	diJets.push_back( std::make_pair( DiJet(jets.at(1) , jets.at(3)) , DiJet(jets.at(0) , jets.at(2)) ) ) ;
+	diJets.push_back( std::make_pair( DiJet(jets.at(1) , jets.at(2)) , DiJet(jets.at(0) , jets.at(3)) ) ) ;
 
 
-	//WW ======
-	double chi2 = std::numeric_limits<double>::max() ;
-	std::vector< std::pair<PseudoJet,PseudoJet> >::iterator goodPairIt = pairs.end() ;
-	for ( std::vector< std::pair<PseudoJet,PseudoJet> >::iterator it = pairs.begin() ; it != pairs.end() ; ++it )
+	double chi2ZH = std::numeric_limits<double>::max() ;
+	double chi2ZZ = std::numeric_limits<double>::max() ;
+	double chi2WW = std::numeric_limits<double>::max() ;
+
+	std::vector< std::pair<DiJet,DiJet> >::iterator goodPairItZH = diJets.end() ;
+	std::vector< std::pair<DiJet,DiJet> >::iterator goodPairItZZ = diJets.end() ;
+	std::vector< std::pair<DiJet,DiJet> >::iterator goodPairItWW = diJets.end() ;
+
+	for ( std::vector< std::pair<DiJet,DiJet> >::iterator it = diJets.begin() ; it != diJets.end() ; ++it )
 	{
-		double tempchi2 = ( it->first.m()*1.04 - 80.39 )*( it->first.m()*1.04 - 80.39 ) + ( it->second.m()*1.04 - 80.39 )*( it->second.m()*1.04 - 80.39 ) ;
+		double tempchi2WW = ( it->first.diJet().m()*1.04 - 80.39 )*( it->first.diJet().m()*1.04 - 80.39 ) + ( it->second.diJet().m()*1.04 - 80.39 )*( it->second.diJet().m()*1.04 - 80.39 ) ;
+		double tempchi2ZZ = ( it->first.diJet().m()*1.04 - 91.2 )*( it->first.diJet().m()*1.04 - 91.2 ) + ( it->second.diJet().m()*1.04 - 91.2 )*( it->second.diJet().m()*1.04 - 91.2 ) ;
+		double tempchi2ZH = ( it->first.diJet().m()*1.04 - 91.2 )*( it->first.diJet().m()*1.04 - 91.2 ) ;
 
-		if (tempchi2 < chi2)
+		if ( tempchi2ZH < chi2ZH )
 		{
-			chi2 = tempchi2 ;
-			goodPairIt = it ;
+			chi2ZH = tempchi2ZH ;
+			goodPairItZH = it ;
 		}
-	}
-	ww12mass = goodPairIt->first.m() ;
-	ww34mass = goodPairIt->second.m() ;
-
-	//ZZ ======
-	chi2 = std::numeric_limits<double>::max() ;
-	goodPairIt = pairs.end() ;
-	for ( std::vector< std::pair<PseudoJet,PseudoJet> >::iterator it = pairs.begin() ; it != pairs.end() ; ++it )
-	{
-		double tempchi2 = ( it->first.m()*1.04 - 91.2 )*( it->first.m()*1.04 - 91.2 ) + ( it->second.m()*1.04 - 91.2 )*( it->second.m()*1.04 - 91.2 ) ;
-
-		if (tempchi2 < chi2)
+		if ( tempchi2ZZ < chi2ZZ )
 		{
-			chi2 = tempchi2 ;
-			goodPairIt = it ;
+			chi2ZZ = tempchi2ZZ ;
+			goodPairItZZ = it ;
 		}
-	}
-	zz12mass = goodPairIt->first.m() ;
-	zz34mass = goodPairIt->second.m() ;
-
-
-
-
-	//Signal
-	chi2 = std::numeric_limits<double>::max() ;
-	goodPairIt = pairs.end() ;
-
-
-	for ( std::vector< std::pair<PseudoJet,PseudoJet> >::iterator it = pairs.begin() ; it != pairs.end() ; ++it )
-	{
-//		double tempchi2 = std::abs( it->first.m() - 91.2 ) ;
-		double tempchi2 = ( it->first.m()*1.04 - 91.2 )*( it->first.m()*1.04 - 91.2 ) ;
-
-		if (tempchi2 < chi2)
+		if ( tempchi2WW < chi2WW )
 		{
-			chi2 = tempchi2 ;
-			goodPairIt = it ;
+			chi2WW = tempchi2WW ;
+			goodPairItWW = it ;
 		}
 	}
 
+	ww12mass = goodPairItWW->first.diJet().m() ;
+	ww34mass = goodPairItWW->second.diJet().m() ;
 
-	const PseudoJet& qqDiJet = goodPairIt->first ;
+	zz12mass = goodPairItZZ->first.diJet().m() ;
+	zz34mass = goodPairItZZ->second.diJet().m() ;
 
-	double pqq = qqDiJet.pt()*qqDiJet.pt() + qqDiJet.pz()*qqDiJet.pz() ;
+	const DiJet& qqDiJet = goodPairItZH->first ;
+	const DiJet& hDiJet = goodPairItZH->second ;
 
-	CLHEP::Hep3Vector pZrec( qqDiJet.px() , qqDiJet.py() , qqDiJet.pz() ) ;
+
+	double zTotEnergy = 0 ;
+	double hTotEnergy = 0 ;
+
+	for( unsigned int i = 0 ; i < jets.size() ; ++i )
+	{
+		std::map<int,float> yuyu = mcOriginOfJet(jets.at(i) , cs) ;
+
+		for ( std::map<int,float>::const_iterator it = yuyu.begin() ; it != yuyu.end() ; ++it )
+		{
+			if ( std::abs(it->first) <= 6 )
+				zTotEnergy += it->second ;
+			if ( std::abs(it->first) == 25 )
+				hTotEnergy += it->second ;
+		}
+	}
+
+	double zTaggedEnergy = 0 ;
+	double hTaggedEnergy = 0 ;
+
+	std::map<int,float> yuyu = mcOriginOfJet(qqDiJet.jet1() , cs) ;
+	for ( std::map<int,float>::const_iterator it = yuyu.begin() ; it != yuyu.end() ; ++it )
+	{
+		if ( std::abs(it->first) <= 6 )
+			zTaggedEnergy += it->second ;
+		if ( std::abs(it->first) == 25 )
+			hTaggedEnergy += it->second ;
+	}
+
+	yuyu = mcOriginOfJet(qqDiJet.jet2() , cs) ;
+	for ( std::map<int,float>::const_iterator it = yuyu.begin() ; it != yuyu.end() ; ++it )
+	{
+		if ( std::abs(it->first) <= 6 )
+			zTaggedEnergy += it->second ;
+		if ( std::abs(it->first) == 25 )
+			hTaggedEnergy += it->second ;
+	}
+
+	cosAngleBetweenZJets = qqDiJet.getCosAngleBetweenJets() ;
+	cosAngleBetweenHJets = hDiJet.getCosAngleBetweenJets() ;
+
+	zEnergy = qqDiJet.diJet().E() ;
+
+	zPurity = zTaggedEnergy/zTotEnergy ;
+	hCont = hTaggedEnergy/hTotEnergy ;
+
+	zPhi = qqDiJet.diJet().phi() ;
+	zRap = qqDiJet.diJet().pseudorapidity() ;
+
+	hPhi = hDiJet.diJet().phi() ;
+	hRap = hDiJet.diJet().pseudorapidity() ;
 
 
-	double mrec = (250.0 - qqDiJet.e() )*(250.0 - qqDiJet.e() ) - pqq ;
 
-//	recMass2 = std::sqrt( (250 - qqDiJet.e())*(250 - qqDiJet.e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
+	double pqq = qqDiJet.diJet().pt()*qqDiJet.diJet().pt() + qqDiJet.diJet().pz()*qqDiJet.diJet().pz() ;
 
-	pZrec *= 1.04 ;
-	recMass2 = std::sqrt( (250 - qqDiJet.e()*1.04)*(250 - qqDiJet.e()*1.04) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
+	CLHEP::Hep3Vector pZrec( qqDiJet.diJet().px() , qqDiJet.diJet().py() , qqDiJet.diJet().pz() ) ;
 
-	zMass = qqDiJet.m()*1.04 ;
-//	zMass = qqDiJet.m() ;
+
+	double mrec = (sqrtS - qqDiJet.diJet().e() )*(sqrtS - qqDiJet.diJet().e() ) - pqq ;
+
+	//	recMass2 = std::sqrt( (250 - qqDiJet.e())*(250 - qqDiJet.e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
+
+	//	pZrec *= 1.04 ;
+	recMass2 = std::sqrt( (sqrtS - qqDiJet.diJet().e())*(sqrtS - qqDiJet.diJet().e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
+
+	zMass = qqDiJet.diJet().m() ;
+	hDiJetMass = hDiJet.diJet().m() ;
 
 
 	recMass = std::sqrt(mrec) ;
