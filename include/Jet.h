@@ -23,6 +23,7 @@ class Jet
 class DiJet
 {
 	public :
+		DiJet() ;
 		DiJet(const fastjet::PseudoJet& a , const fastjet::PseudoJet& b) ;
 		~DiJet() ;
 

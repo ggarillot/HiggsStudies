@@ -30,7 +30,7 @@ FIND_PACKAGE( ROOT REQUIRED )
 
 FOREACH( pkg Marlin FastJet ROOT )
     IF( ${pkg}_FOUND )
-        INCLUDE_DIRECTORIES( ${${pkg}_INCLUDE_DIRS} )
+		INCLUDE_DIRECTORIES( SYSTEM ${${pkg}_INCLUDE_DIRS} )
         LINK_LIBRARIES( ${${pkg}_LIBRARIES} )
         ADD_DEFINITIONS ( ${${pkg}_DEFINITIONS} )
     ENDIF()
@@ -51,35 +51,35 @@ include_directories( ${PROJECT_SOURCE_DIR}/include )
 #INSTALL_DIRECTORY( ./include DESTINATION . FILES_MATCHING PATTERN "*.h" )
 
 # definitions to pass to the compiler
-ADD_DEFINITIONS( "-Wall -ansi -pedantic" )
+ADD_DEFINITIONS( "-Wall -ansi -pedantic -std=c++11" )
 ADD_DEFINITIONS( "-Wno-long-long" )
 
 # include directories
-INCLUDE_DIRECTORIES( ./include )
+include_directories( ./include )
 
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
-
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.h)
-#file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
-
-
-SET (toto ${PROJECT_SOURCE_DIR}/src/toto.cxx)
-
-
-ADD_EXECUTABLE( toto ${toto} ${headers} ${sources} )
-TARGET_LINK_LIBRARIES( toto ${ROOT_COMPONENT_LIBRARIES} )
-INSTALL(TARGETS toto RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin)
-
-
-
+file(GLOB_RECURSE sources ${PROJECT_SOURCE_DIR}/src/*.cc)
+file(GLOB_RECURSE headers ${PROJECT_SOURCE_DIR}/include/*.h)
 
 #add library
-AUX_SOURCE_DIRECTORY( src library_sources )
-ADD_SHARED_LIBRARY( ${PROJECT_NAME} ${library_sources} )
-INSTALL_SHARED_LIBRARY( ${PROJECT_NAME} DESTINATION lib )
+add_library( ${PROJECT_NAME} SHARED ${sources} ${headers} )
+install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib )
 
+
+add_executable(toto ${PROJECT_SOURCE_DIR}/src/toto.cxx)
+target_link_libraries( toto ${PROJECT_NAME} ${ROOT_COMPONENT_LIBRARIES} )
+install(TARGETS toto RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+
+
+
+#add_executable( ${testname} ${testsourcefile} )
+
+#ADD_EXECUTABLE( toto ${toto} ${headers} ${sources} )
+#TARGET_LINK_LIBRARIES( toto ${ROOT_COMPONENT_LIBRARIES} )
+#INSTALL(TARGETS toto RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin)
+
+#AUX_SOURCE_DIRECTORY( src library_sources )
+#ADD_SHARED_LIBRARY( ${PROJECT_NAME} ${library_sources} )
+#INSTALL_SHARED_LIBRARY( ${PROJECT_NAME} DESTINATION lib )
 
 # display some variables and write them to cache
 #DISPLAY_STD_VARIABLES()
-

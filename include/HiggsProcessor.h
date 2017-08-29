@@ -1,7 +1,6 @@
 #ifndef HiggsProcessor_h
 #define HiggsProcessor_h
 
-
 #include "marlin/Processor.h"
 #include "lcio.h"
 #include <string>
@@ -27,7 +26,6 @@
 #include "Particle.h"
 #include "Jet.h"
 
-
 using namespace lcio ;
 using namespace marlin ;
 
@@ -35,25 +33,25 @@ class HiggsProcessor : public Processor
 {
 	public :
 
-		virtual Processor*  newProcessor() { return new HiggsProcessor ; }
+		virtual Processor* newProcessor() { return new HiggsProcessor ; }
 
 		HiggsProcessor() ;
 
 		virtual void init() ;
 
-		virtual void processRunHeader( LCRunHeader* run ) ;
+		virtual void processRunHeader(LCRunHeader* ) ;
 
 		virtual void processEvent( LCEvent * evt ) ;
 
-		virtual void check( LCEvent * evt ) ;
+		virtual void check(LCEvent* ) ;
 
 		virtual void end() ;
 
 
-		std::vector<int> findDecayMode(LCCollection* mcCol) ;
-		double getISREnergy(LCCollection* mcCol) ;
-		CLHEP::HepLorentzVector getZLorentzVectorMC(LCCollection* mcCol) ;
-		CLHEP::HepLorentzVector getHLorentzVectorMC(LCCollection* mcCol) ;
+		std::vector<int> findDecayMode(LCCollection* _mcCol) ;
+		double getISREnergy(LCCollection* _mcCol) ;
+		CLHEP::HepLorentzVector getZLorentzVectorMC(LCCollection* _mcCol) ;
+		CLHEP::HepLorentzVector getHLorentzVectorMC(LCCollection* _mcCol) ;
 
 		double getZEnergyMC() ;
 		double getCosAngleBetweenZJetsMC() ;
@@ -65,21 +63,23 @@ class HiggsProcessor : public Processor
 
 		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet, fastjet::ClusterSequence& cs) ;
 
+		HiggsProcessor(const HiggsProcessor &toCopy) = delete ;
+		void operator=(const HiggsProcessor &toCopy) = delete ;
 
 	protected :
 
-		int _nRun ;
-		int _nEvt ;
+		int _nRun = 0 ;
+		int _nEvt = 0 ;
 
-		LCEvent* currentEvt ;
+		LCEvent* currentEvt = nullptr ;
 
 		std::string mcPartColName ;
 		std::string recoPartColName ;
 		std::string linkColName ;
 
-		LCCollection* mcCol ;
-		LCCollection* linkCol ;
-		LCCollection* recoCol ;
+		LCCollection* mcCol = nullptr ;
+		LCCollection* linkCol = nullptr ;
+		LCCollection* recoCol = nullptr ;
 
 		std::vector<ReconstructedParticleImpl*> recoParticles ;
 		std::vector<fastjet::PseudoJet> particles ;
@@ -90,65 +90,64 @@ class HiggsProcessor : public Processor
 
 		std::map<ReconstructedParticleImpl* , std::map<int,float> > originMap ;
 
-		std::string rootFileName ;
-		TFile* file ;
-		TTree* tree ;
+		std::string rootFileName = "" ;
+		TFile* file = nullptr ;
+		TTree* tree = nullptr ;
 
-		double sqrtS ;
+		double sqrtS = 0 ;
 
-		int decayID ;
-		double totalEnergy ;
-		double energy4Jets ;
-		double ISREnergy ;
-		double zMassMC ;
-		double recMassMC ;
+		int decayID = 0 ;
+		double totalEnergy = 0 ;
+		double energy4Jets = 0 ;
+		double ISREnergy = 0 ;
+		double zMassMC = 0 ;
+		double recMassMC = 0 ;
 
-		double zEnergyMC ;
-		double cosAngleBetweenZJetsMC ;
-		double cosAngleBetweenHJetsMC ;
-		double zPhiMC ;
-		double zRapMC ;
+		double zEnergyMC = 0 ;
+		double cosAngleBetweenZJetsMC = 0 ;
+		double cosAngleBetweenHJetsMC = 0 ;
+		double zPhiMC = 0 ;
+		double zRapMC = 0 ;
 
-		double hPhiMC ;
-		double hRapMC ;
+		double hPhiMC = 0 ;
+		double hRapMC = 0 ;
 
-		double zMass ;
-		double recMass ;
-		double recMass2 ;
-		double zEnergy ;
-		double cosAngleBetweenZJets ;
-		double cosAngleBetweenHJets ;
-		double zPhi ;
-		double zRap ;
+		double zMass = 0 ;
+		double recMass = 0 ;
+		double recMass2 = 0 ;
+		double zEnergy = 0 ;
+		double cosAngleBetweenZJets = 0 ;
+		double cosAngleBetweenHJets = 0 ;
+		double zPhi = 0 ;
+		double zRap = 0 ;
 
-		double hPhi ;
-		double hRap ;
-
-
-		double hDiJetMass ;
-
-		double ww12mass ;
-		double ww34mass ;
-
-		double zz12mass ;
-		double zz34mass ;
-
-		double zPurity ;
-		double hCont ;
-
-		double idealRecoZmass ;
-		double idealRecoHmass ;
-		double idealRecoRecMass ;
+		double hPhi = 0 ;
+		double hRap = 0 ;
 
 
+		double hDiJetMass = 0 ;
 
-		double pX ;
-		double pY ;
-		double pZ ;
-		double deltaP ;
+		double ww12mass = 0 ;
+		double ww34mass = 0 ;
+
+		double zz12mass = 0 ;
+		double zz34mass = 0 ;
+
+		double zPurity = 0 ;
+		double hCont = 0 ;
+
+		double idealRecoZmass = 0 ;
+		double idealRecoHmass = 0 ;
+		double idealRecoRecMass = 0 ;
+
+
+
+		double pX = 0 ;
+		double pY = 0 ;
+		double pZ = 0 ;
+		double deltaP = 0 ;
 
 		std::vector<double> yValueVec ;
-
 
 	private :
 

@@ -1,11 +1,18 @@
 #include "Jet.h"
 
-DiJet::DiJet(const fastjet::PseudoJet& a , const fastjet::PseudoJet& b)
+DiJet::DiJet()
+	: _jet1( fastjet::PseudoJet(0,0,0,0) ) ,
+	  _jet2( fastjet::PseudoJet(0,0,0,0) ) ,
+	  _diJet(_jet1 + _jet2)
 {
-	_jet1 = a ;
-	_jet2 = b ;
+}
 
-	_diJet = a + b ;
+DiJet::DiJet(const fastjet::PseudoJet& a , const fastjet::PseudoJet& b)
+	: _jet1(a) ,
+	  _jet2(b) ,
+	  _diJet(a+b)
+{
+
 }
 
 DiJet::~DiJet()

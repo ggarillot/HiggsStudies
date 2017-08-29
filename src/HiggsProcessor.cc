@@ -24,7 +24,15 @@ using namespace marlin ;
 
 HiggsProcessor aHiggsProcessor ;
 
-HiggsProcessor::HiggsProcessor() : Processor("HiggsProcessor")
+HiggsProcessor::HiggsProcessor()
+	: Processor("HiggsProcessor") ,
+	  mcPartColName() ,
+	  recoPartColName() ,
+	  linkColName() ,
+	  recoParticles() ,
+	  particles() ,
+	  originMap() ,
+	  yValueVec()
 {
 
 	registerProcessorParameter( "RootFileName" ,
@@ -110,15 +118,15 @@ void HiggsProcessor::init()
 }
 
 
-std::vector<int> HiggsProcessor::findDecayMode(LCCollection* mcCol)
+std::vector<int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 {
 	//	std::cout << "HiggsProcessor::findDecayMode(LCCollection* mcCol)" << std::endl ;
 
 	std::vector<int> toReturn ;
-	if ( mcCol->getNumberOfElements() < 10 )
+	if ( _mcCol->getNumberOfElements() < 10 )
 		return toReturn ;
 
-	MCParticleImpl* part = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 9 ) ) ;
+	MCParticleImpl* part = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 9 ) ) ;
 
 	if ( part->getPDG() != 25 )
 	{
@@ -135,32 +143,32 @@ std::vector<int> HiggsProcessor::findDecayMode(LCCollection* mcCol)
 	return toReturn ;
 }
 
-double HiggsProcessor::getISREnergy(LCCollection* mcCol)
+double HiggsProcessor::getISREnergy(LCCollection* _mcCol)
 {
 	double toReturn = 0.0 ;
-	if ( mcCol->getNumberOfElements() < 2 )
+	if ( _mcCol->getNumberOfElements() < 2 )
 		return toReturn ;
 
-	toReturn += dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 0 ) )->getEnergy() ;
-	toReturn += dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 1 ) )->getEnergy() ;
+	toReturn += dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 0 ) )->getEnergy() ;
+	toReturn += dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 1 ) )->getEnergy() ;
 	return toReturn ;
 }
 
-CLHEP::HepLorentzVector HiggsProcessor::getZLorentzVectorMC(LCCollection* mcCol)
+CLHEP::HepLorentzVector HiggsProcessor::getZLorentzVectorMC(LCCollection* _mcCol)
 {
-	if ( mcCol->getNumberOfElements() < 13 )
+	if ( _mcCol->getNumberOfElements() < 13 )
 	{
 		return CLHEP::HepLorentzVector(0,0,0,0) ;
 	}
 
-	const double* p1d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 11 ) )->getMomentum() ;
-	const double* p2d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 12 ) )->getMomentum() ;
+	const double* p1d = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 11 ) )->getMomentum() ;
+	const double* p2d = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 12 ) )->getMomentum() ;
 
 	CLHEP::Hep3Vector p1( p1d[0] , p1d[1] , p1d[2] ) ;
 	CLHEP::Hep3Vector p2( p2d[0] , p2d[1] , p2d[2] ) ;
 	CLHEP::Hep3Vector p = p1+p2 ;
 
-	double e = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 11 ) )->getEnergy() + dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 12 ) )->getEnergy() ;
+	double e = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 11 ) )->getEnergy() + dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 12 ) )->getEnergy() ;
 
 
 	//	const double* p1d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 10 ) )->getMomentum() ;
@@ -179,20 +187,20 @@ CLHEP::HepLorentzVector HiggsProcessor::getZLorentzVectorMC(LCCollection* mcCol)
 	return CLHEP::HepLorentzVector(p , e) ;
 }
 
-CLHEP::HepLorentzVector HiggsProcessor::getHLorentzVectorMC(LCCollection* mcCol)
+CLHEP::HepLorentzVector HiggsProcessor::getHLorentzVectorMC(LCCollection* _mcCol)
 {
-	if ( mcCol->getNumberOfElements() < 5 )
+	if ( _mcCol->getNumberOfElements() < 5 )
 	{
 		return CLHEP::HepLorentzVector(0,0,0,0) ;
 	}
 
-	const double* p1d = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 4 ) )->getMomentum() ;
+	const double* p1d = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 4 ) )->getMomentum() ;
 
 	CLHEP::Hep3Vector p( p1d[0] , p1d[1] , p1d[2] ) ;
 
-	double e = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 4 ) )->getEnergy()  ;
+	double e = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 4 ) )->getEnergy()  ;
 
-	int id = dynamic_cast<MCParticleImpl*>( mcCol->getElementAt( 4 ) )->getPDG() ;
+	int id = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 4 ) )->getPDG() ;
 	if ( id != 25 )
 	{
 		std::cout << "Error in HiggsProcessor::findDecayMode : Not a Higgs : " << id << std::endl ;
@@ -293,7 +301,7 @@ std::map<int,float> HiggsProcessor::mcOriginOfJet(const fastjet::PseudoJet& jet 
 }
 
 
-void HiggsProcessor::processRunHeader(LCRunHeader* run)
+void HiggsProcessor::processRunHeader(LCRunHeader* )
 {
 	_nRun++ ;
 	_nEvt = 0 ;
@@ -355,8 +363,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	}
 
 
-//	double rZ = 3.14159265/2.0 ;
-		double rZ = 6 ;
+	//	double rZ = 3.14159265/2.0 ;
+	double rZ = 6 ;
 
 	fastjet::JetDefinition jetDefZ(fastjet::kt_algorithm , rZ) ;
 	fastjet::ClusterSequence csZ(zParticles, jetDefZ) ;
@@ -374,8 +382,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	jetsZ.push_back(zAll) ;
 
 
-//	jetsZ = sorted_by_pt( csZ.exclusive_jets(2) ) ;
-//	jetsZ = sorted_by_pt( csZ.inclusive_jets() ) ;
+	//	jetsZ = sorted_by_pt( csZ.exclusive_jets(2) ) ;
+	//	jetsZ = sorted_by_pt( csZ.inclusive_jets() ) ;
 
 
 	fastjet::JetDefinition jetDefH(fastjet::kt_algorithm , 6) ;
@@ -418,7 +426,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	hPhiMC = idealHDiJet.phi() ;
 	hRapMC = idealHDiJet.pseudorapidity() ;
 
-/*
+	/*
 	double etotz = 0 ;
 	for ( std::vector<fastjet::PseudoJet>::const_iterator it = zParticles.begin() ; it != zParticles.end() ; ++it )
 		etotz += it->E() ;
@@ -517,14 +525,18 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 
 
-	double R = 3.14159265/2.0;
-//	double R = 0.4 ;
+	//	double R = 3.14159265/2.0;
+	double R = M_PI/2.0 ;
+	//	double R = 0.7 ;
 	fastjet::JetDefinition jet_def(fastjet::kt_algorithm , R) ;
+	//	fastjet::JetDefinition jet_def(fastjet::antikt_algorithm , R) ;
+	//	fastjet::JetDefinition jet_def(fastjet::ee_kt_algorithm) ;
 	fastjet::ClusterSequence cs(particles, jet_def) ;
 
-//	std::cout << cs.inclusive_jets().size() << " jets" << std::endl ;
-//	std::cout << "decay : " << vec.at(0) << std::endl ;
+	//	std::cout << cs.inclusive_jets().size() << " jets" << std::endl ;
+	//	std::cout << "decay : " << vec.at(0) << std::endl ;
 	std::vector<PseudoJet> jets = sorted_by_pt( cs.exclusive_jets(4) ) ;
+	std::vector<PseudoJet> inclusiveJets = sorted_by_E( cs.exclusive_jets(0.006) ) ;
 
 
 	energy4Jets = 0.0 ;
@@ -566,7 +578,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	{
 		double tempchi2WW = ( it->first.diJet().m()*1.04 - 80.39 )*( it->first.diJet().m()*1.04 - 80.39 ) + ( it->second.diJet().m()*1.04 - 80.39 )*( it->second.diJet().m()*1.04 - 80.39 ) ;
 		double tempchi2ZZ = ( it->first.diJet().m()*1.04 - 91.2 )*( it->first.diJet().m()*1.04 - 91.2 ) + ( it->second.diJet().m()*1.04 - 91.2 )*( it->second.diJet().m()*1.04 - 91.2 ) ;
-		double tempchi2ZH = ( it->first.diJet().m()*1.04 - 91.2 )*( it->first.diJet().m()*1.04 - 91.2 ) ;
+		//		double tempchi2ZH = ( it->first.diJet().m()*1.04 - 91.2 )*( it->first.diJet().m()*1.04 - 91.2 ) ;
+		double tempchi2ZH = ( it->first.diJet().m() - 91.2 )*( it->first.diJet().m() - 91.2 ) ;
 
 		if ( tempchi2ZH < chi2ZH )
 		{
@@ -584,6 +597,28 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 			goodPairItWW = it ;
 		}
 	}
+
+
+	double chi2Z = std::numeric_limits<double>::max() ;
+	DiJet zDiJet ;
+
+	for ( unsigned int i = 0 ; i < inclusiveJets.size() ; ++i )
+	{
+		for ( unsigned int j = i+1 ; j < inclusiveJets.size() ; ++j )
+		{
+			DiJet diJet( inclusiveJets.at(i) , inclusiveJets.at(j) ) ;
+
+			double tempchi2Z = ( diJet.diJet().m()*1.04 - 91.2 )*( diJet.diJet().m()*1.04 - 91.2 ) ;
+
+			if ( tempchi2Z < chi2Z )
+			{
+				chi2Z = tempchi2Z ;
+				zDiJet = diJet ;
+			}
+
+		}
+	}
+
 
 	ww12mass = goodPairItWW->first.diJet().m() ;
 	ww34mass = goodPairItWW->second.diJet().m() ;
@@ -655,14 +690,24 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	double mrec = (sqrtS - qqDiJet.diJet().e() )*(sqrtS - qqDiJet.diJet().e() ) - pqq ;
 
-	//	recMass2 = std::sqrt( (250 - qqDiJet.e())*(250 - qqDiJet.e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
 
 	//	pZrec *= 1.04 ;
-	recMass2 = std::sqrt( (sqrtS - qqDiJet.diJet().e())*(sqrtS - qqDiJet.diJet().e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
 
 	zMass = qqDiJet.diJet().m() ;
+
+	double a = 91.2/zMass ;
+
+	//	recMass2 = std::sqrt( (sqrtS - qqDiJet.diJet().e())*(sqrtS - qqDiJet.diJet().e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
+	recMass2 = std::sqrt( (sqrtS - qqDiJet.diJet().e()*a)*(sqrtS - qqDiJet.diJet().e()*a) - ( pZrec.mag2()*a*a + totP.mag2() - 2*pZrec.dot(totP)*a ) ) ;
+
 	hDiJetMass = hDiJet.diJet().m() ;
 
+
+
+	//	zMass = zDiJet.diJet().m() ;
+	//	pZrec = CLHEP::Hep3Vector( zDiJet.diJet().px() , zDiJet.diJet().py() , zDiJet.diJet().pz() ) ;
+
+	//	recMass2 = std::sqrt( (sqrtS - zDiJet.diJet().e())*(sqrtS - zDiJet.diJet().e()) - ( pZrec.mag2() + totP.mag2() -2*pZrec.dot(totP) ) ) ;
 
 	recMass = std::sqrt(mrec) ;
 
@@ -682,7 +727,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 }
 
 
-void HiggsProcessor::check(LCEvent * evt)
+void HiggsProcessor::check(LCEvent* )
 {
 }
 

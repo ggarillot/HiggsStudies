@@ -32,13 +32,15 @@ class ParticleInfo : public fastjet::PseudoJet::UserInfoBase
 		inline int origin() const { return _origin ; }
 		inline int id() const { return _id ; }
 
+		ParticleInfo(const ParticleInfo &toCopy) = delete ;
+		void operator=(const ParticleInfo &toCopy) = delete ;
 
 	protected :
 
-		IMPL::ReconstructedParticleImpl* _recoParticle ;
+		IMPL::ReconstructedParticleImpl* _recoParticle = nullptr ;
 
-		int _origin ;
-		int _id ;
+		int _origin = 0 ;
+		int _id = 0 ;
 
 } ;
 

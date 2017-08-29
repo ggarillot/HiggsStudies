@@ -18,7 +18,7 @@
 using namespace fastjet ;
 
 
-int main(int argc , char** argv)
+int main()
 {
 	TH1D* higgsHisto = new TH1D("higgs","", 400 , 0 , 200) ;
 	TH1D* zHisto = new TH1D("z","", 400 , 0 , 200) ;
