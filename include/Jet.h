@@ -11,12 +11,23 @@
 #include <fastjet/ClusterSequence.hh>
 
 
-class Jet
+class JetInfo : public fastjet::PseudoJet::UserInfoBase
 {
 	public :
+		JetInfo() = default ;
+		~JetInfo() = default ;
+
+		void setMcOrigin(const std::map<int,float> _origin) { _mcOrigin = _origin ; }
+
+		std::map<int,float> mcOrigin() const { return _mcOrigin ; }
+
+
+		JetInfo(const JetInfo &toCopy) = delete ;
+		void operator=(const JetInfo &toCopy) = delete ;
 
 	protected :
 
+		std::map<int,float> _mcOrigin = {} ;
 } ;
 
 

@@ -18,8 +18,8 @@
 class ParticleInfo : public fastjet::PseudoJet::UserInfoBase
 {
 	public :
-		ParticleInfo() ;
-		~ParticleInfo() ;
+		ParticleInfo() = default ;
+		~ParticleInfo() = default ;
 
 
 		void setRecoParticle(IMPL::ReconstructedParticleImpl* toto) { _recoParticle = toto ; }
