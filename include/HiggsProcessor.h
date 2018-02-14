@@ -18,6 +18,7 @@
 #include <CLHEP/Vector/ThreeVector.h>
 #include <CLHEP/Vector/LorentzVector.h>
 #include <fastjet/ClusterSequence.hh>
+#include <fastjet/JadePlugin.hh>
 
 #include <TROOT.h>
 #include <TFile.h>
@@ -63,15 +64,7 @@ class HiggsProcessor : public Processor
 		void computeOriginMap() ;
 
 		std::map<int,float> mcOriginOfParticle(ReconstructedParticleImpl* recoPart) ;
-
 		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet, fastjet::ClusterSequence& cs) ;
-
-		template<typename T>
-		std::vector<fastjet::PseudoJet> exclusiveJets(T value) ;
-
-
-//		std::vector<fastjet::PseudoJet> exclusiveJets(double dcut) ;
-//		std::vector<fastjet::PseudoJet> exclusiveJets(int nJets) ;
 
 		DiJet chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets , std::vector<fastjet::PseudoJet>& remainingJets) ;
 
@@ -98,17 +91,14 @@ class HiggsProcessor : public Processor
 		LCCollection* linkCol = nullptr ;
 		LCCollection* recoCol = nullptr ;
 
+		double dMin = 0 ;
+
 		std::vector<ReconstructedParticleImpl*> recoParticles = {} ;
 
 		std::vector<fastjet::PseudoJet> particles = {} ;
 		std::vector<fastjet::PseudoJet> zParticles = {} ;
 		std::vector<fastjet::PseudoJet> hParticles = {} ;
 		std::vector<fastjet::PseudoJet> allExceptHParticles = {} ;
-
-		//		std::vector<fastjet::PseudoJet> jets ;
-
-		//		ParticleVec particles ;
-
 
 		std::map<ReconstructedParticleImpl* , std::map<int,float> > originMap ;
 
@@ -118,71 +108,57 @@ class HiggsProcessor : public Processor
 
 		double sqrtS = 0 ;
 
-		int eventNumber = 0 ;
+		unsigned int nJets = 0 ;
 
-		int decayID = 0 ;
+		double zMass = 0 ;
+		double recMass = 0 ;
+
+		double cosThetaZDiJet = 0 ;
+		double cosThetaHDiJet = 0 ;
+
+		double z1e = 0 ;
+		double z2e = 0 ;
+		double h1e = 0 ;
+		double h2e = 0 ;
+
+		double ww12mass = 0 ;
+		double ww34mass = 0 ;
+		double zz12mass = 0 ;
+		double zz34mass = 0 ;
+
 		double totalEnergy = 0 ;
-		double energy4Jets = 0 ;
+		double totalEnergyJets = 0 ;
+
+
+		//MC infos
+		int decayID = 0 ;
+
+		double zPurity = 0 ;
+		double zTagged = 0 ;
+
+		double zMassIdeal = 0 ;
+		double recMassIdeal = 0 ;
+
+		double cosThetaZDiJetIdeal = 0 ;
+		double cosThetaHDiJetIdeal = 0 ;
+
 		double ISREnergy = 0 ;
 
-		std::vector<double> energyISRVec {} ;
-		std::vector<double> etaISRVec {} ;
+
+
+
 
 		double zMassMC = 0 ;
 		double recMassMC = 0 ;
 
-		double zEnergyMC = 0 ;
-		double cosAngleBetweenZJetsMC = 0 ;
-		double cosAngleBetweenHJetsMC = 0 ;
-		double zPhiMC = 0 ;
-		double zRapMC = 0 ;
-
-		double hPhiMC = 0 ;
-		double hRapMC = 0 ;
-
-		std::vector<double> phiVec {} ;
-		std::vector<double> thetaVec {} ;
-		std::vector<double> jetVec {} ;
-
-		double zMass = 0 ;
-		double recMass = 0 ;
-		double recMass2 = 0 ;
-		double zEnergy = 0 ;
-		double cosAngleBetweenZJets = 0 ;
-		double cosAngleBetweenHJets = 0 ;
-
-		double maxCosBetweenTwoJets = 0 ;
-
-		double zPhi = 0 ;
-		double zRap = 0 ;
-
-		double hPhi = 0 ;
-		double hRap = 0 ;
 
 
-		double hDiJetMass = 0 ;
 
-		double ww12mass = 0 ;
-		double ww34mass = 0 ;
-
-		double zz12mass = 0 ;
-		double zz34mass = 0 ;
-
-		double zPurity = 0 ;
-		double hCont = 0 ;
 
 		std::vector<double> zPurityJets {} ;
 
-		double idealRecoZmass = 0 ;
-		double idealRecoHmass = 0 ;
-		double idealRecoRecMass = 0 ;
-
 
 		std::vector<double> yValueVec ;
-
-		double invRecMass = 0 ;
-
-		double inclRecMass = 0 ;
 
 	private :
 
