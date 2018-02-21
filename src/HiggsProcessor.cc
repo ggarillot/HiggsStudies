@@ -472,7 +472,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	//WW and ZZ pair (background study)
 	fastjet::JetDefinition jD4(fastjet::ee_kt_algorithm) ;
-	fastjet::ClusterSequence cs4(zParticles , jD4) ;
+	fastjet::ClusterSequence cs4(particles , jD4) ;
 	auto jets4 = sorted_by_pt( cs4.exclusive_jets(4) ) ;
 
 	auto wwPair = choosePairOfWDiJets(jets4) ;
