@@ -63,23 +63,3 @@ file(GLOB_RECURSE headers ${PROJECT_SOURCE_DIR}/include/*.h)
 #add library
 add_library( ${PROJECT_NAME} SHARED ${sources} ${headers} )
 install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib )
-
-
-add_executable(toto ${PROJECT_SOURCE_DIR}/src/toto.cxx)
-target_link_libraries( toto ${PROJECT_NAME} ${ROOT_COMPONENT_LIBRARIES} )
-install(TARGETS toto RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin)
-
-
-
-#add_executable( ${testname} ${testsourcefile} )
-
-#ADD_EXECUTABLE( toto ${toto} ${headers} ${sources} )
-#TARGET_LINK_LIBRARIES( toto ${ROOT_COMPONENT_LIBRARIES} )
-#INSTALL(TARGETS toto RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin)
-
-#AUX_SOURCE_DIRECTORY( src library_sources )
-#ADD_SHARED_LIBRARY( ${PROJECT_NAME} ${library_sources} )
-#INSTALL_SHARED_LIBRARY( ${PROJECT_NAME} DESTINATION lib )
-
-# display some variables and write them to cache
-#DISPLAY_STD_VARIABLES()
