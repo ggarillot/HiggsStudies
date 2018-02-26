@@ -74,7 +74,7 @@ if __name__ == '__main__' :
 	#print fileList
 
 	a = Params()
-	a.dMin = 375
+	#a.dMin = 375
 	a.outputFileName = "qqH.root"
 	#a.outputFileName = "ZZ.root"
 	#a.outputFileName = "WW.root"

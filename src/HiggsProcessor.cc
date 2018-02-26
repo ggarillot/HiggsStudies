@@ -75,8 +75,11 @@ void HiggsProcessor::init()
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
 
-	tree->Branch("cosThetaZDiJet" , &cosThetaZDiJet) ;
-	tree->Branch("cosThetaHDiJet" , &cosThetaHDiJet) ;
+	tree->Branch("cosThetaZ" , &cosThetaZ) ;
+
+	tree->Branch("cosThetaZ12" , &cosThetaZ12) ;
+	tree->Branch("cosThetaH12" , &cosThetaH12) ;
+
 
 	tree->Branch("z1e" , &z1e) ;
 	tree->Branch("z2e" , &z2e) ;
@@ -528,26 +531,27 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	fastjet::ClusterSequence csH(remainingParticles , jDH) ;
 	auto hJets = sorted_by_pt( csH.exclusive_jets(targetNJetsH) ) ;
 
-	cosThetaZDiJet = zDiJet.getCosAngleBetweenJets() ;
+	cosThetaZ = zDiJet.diJet().pz() / zDiJet.diJet().modp() ;
+	cosThetaZ12 = zDiJet.getCosAngleBetweenJets() ;
 	z1e = zDiJet.jet1().e() ;
 	z2e = zDiJet.jet2().e() ;
 
 	if ( hJets.size() == 2 )
 	{
 		auto hDiJet = DiJet(hJets.at(0) , hJets.at(1)) ;
-		cosThetaHDiJet = hDiJet.getCosAngleBetweenJets() ;
+		cosThetaH12 = hDiJet.getCosAngleBetweenJets() ;
 		h1e = hDiJet.jet1().e() ;
 		h2e = hDiJet.jet2().e() ;
 	}
 	else if ( hJets.size() == 1 )
 	{
-		cosThetaHDiJet = 1.0 ;
+		cosThetaH12 = 1.0 ;
 		h1e = hJets.at(0).e() ;
 		h2e = 0.0 ;
 	}
 	else
 	{
-		cosThetaHDiJet = 0.0 ;
+		cosThetaH12 = 0.0 ;
 		h1e = 0.0 ;
 		h2e = 0.0 ;
 	}

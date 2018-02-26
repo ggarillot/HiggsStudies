@@ -113,8 +113,10 @@ class HiggsProcessor : public Processor
 		double zMass = 0 ;
 		double recMass = 0 ;
 
-		double cosThetaZDiJet = 0 ;
-		double cosThetaHDiJet = 0 ;
+		double cosThetaZ = 0 ;
+
+		double cosThetaZ12 = 0 ;
+		double cosThetaH12 = 0 ;
 
 		double z1e = 0 ;
 		double z2e = 0 ;

@@ -63,3 +63,5 @@ file(GLOB_RECURSE headers ${PROJECT_SOURCE_DIR}/include/*.h)
 #add library
 add_library( ${PROJECT_NAME} SHARED ${sources} ${headers} )
 install( TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib )
+
+ADD_SUBDIRECTORY( ./Analysis )
