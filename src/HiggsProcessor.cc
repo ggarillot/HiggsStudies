@@ -74,6 +74,7 @@ void HiggsProcessor::init()
 
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
+	tree->Branch("recMass2" , &recMass2) ;
 
 	tree->Branch("cosThetaZ" , &cosThetaZ) ;
 
@@ -521,9 +522,11 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 
 	zMass = zDiJet.diJet().m() ;
-	double pZ = zDiJet.diJet().pt()*zDiJet.diJet().pt() + zDiJet.diJet().pz()*zDiJet.diJet().pz() ;
+	double pZ = zDiJet.diJet().modp2() ;
 	recMass = std::sqrt( (sqrtS - zDiJet.diJet().e() )*(sqrtS - zDiJet.diJet().e() ) - pZ ) ;
 
+	double a = (zMassRef*zMassRef)/zDiJet.diJet().m2() ;
+	recMass2 = std::sqrt( (sqrtS - zDiJet.diJet().e()*std::sqrt(a) )*(sqrtS - zDiJet.diJet().e()*std::sqrt(a) ) - pZ*a ) ;
 
 	int targetNJetsH = std::min(static_cast<int>(remainingParticles.size()) , 2 ) ;
 
