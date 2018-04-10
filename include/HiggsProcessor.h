@@ -62,6 +62,7 @@ class HiggsProcessor : public Processor
 
 
 		void computeOriginMap() ;
+		double totalNeutrinoEnergy() ;
 
 		std::map<int,float> mcOriginOfParticle(ReconstructedParticleImpl* recoPart) ;
 		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet, fastjet::ClusterSequence& cs) ;
@@ -91,7 +92,9 @@ class HiggsProcessor : public Processor
 		LCCollection* linkCol = nullptr ;
 		LCCollection* recoCol = nullptr ;
 
-		double dMin = 0 ;
+		double dMin = 0.0 ;
+		double alphaAngle = 0.0 ;
+		double valueAngle = 0.0 ;
 
 		std::vector<ReconstructedParticleImpl*> recoParticles = {} ;
 
@@ -113,6 +116,7 @@ class HiggsProcessor : public Processor
 		double zMass = 0 ;
 		double recMass = 0 ;
 		double recMass2 = 0 ;
+		double recMassInv = 0 ;
 
 		double cosThetaZ = 0 ;
 
@@ -132,6 +136,9 @@ class HiggsProcessor : public Processor
 		double totalEnergy = 0 ;
 		double totalEnergyJets = 0 ;
 
+		std::vector<double> pMiss = {} ;
+		double pMissNorm = 0 ;
+
 
 		//MC infos
 		int decayID = 0 ;
@@ -142,9 +149,12 @@ class HiggsProcessor : public Processor
 		double zMassIdeal = 0 ;
 		double recMassIdeal = 0 ;
 
-		double cosThetaZDiJetIdeal = 0 ;
-		double cosThetaHDiJetIdeal = 0 ;
+		double cosThetaZIdeal = 0 ;
 
+		double cosThetaBetwZDiJetIdeal = 0 ;
+		double cosThetaBetwHDiJetIdeal = 0 ;
+
+		double neutrinoEnergy = 0 ;
 		double ISREnergy = 0 ;
 
 
