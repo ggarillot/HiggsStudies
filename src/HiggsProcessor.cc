@@ -55,9 +55,9 @@ HiggsProcessor::HiggsProcessor()
 								sqrtS ,
 								250.0 ) ;
 
-	registerProcessorParameter( "dMin" ,
-								"dMin" ,
-								dMin ,
+	registerProcessorParameter( "yCut" ,
+								"yCut" ,
+								yCut ,
 								0.0 ) ;
 
 	registerProcessorParameter( "alphaAngle" ,
@@ -580,10 +580,10 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	fastjet::ClusterSequence csZH(particles , jDZH) ;
 
 	std::vector<fastjet::PseudoJet> jets = {} ;
-	if ( dMin <= std::numeric_limits<double>::epsilon() )
+	if ( yCut <= std::numeric_limits<double>::epsilon() )
 		jets = sorted_by_pt( csZH.exclusive_jets(4) ) ;
 	else
-		jets = sorted_by_pt( csZH.exclusive_jets(dMin) ) ;
+		jets = sorted_by_pt( csZH.exclusive_jets_ycut(yCut) ) ;
 
 	for ( auto& jet : jets )
 	{

@@ -92,7 +92,7 @@ class HiggsProcessor : public Processor
 		LCCollection* linkCol = nullptr ;
 		LCCollection* recoCol = nullptr ;
 
-		double dMin = 0.0 ;
+		double yCut = 0.0 ;
 		double alphaAngle = 0.0 ;
 		double valueAngle = 0.0 ;
 

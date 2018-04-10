@@ -6,7 +6,7 @@ class Params :
 	def __init__(self) :
 		self.outputFileName = 'test.root'
 		self.sqrtS = 250
-		self.dMin = 0
+		self.yCut = 0
 		self.valueAngle = 0
 		self.alphaAngle = 0
 		self.maxRecordNumber = 0
@@ -39,7 +39,7 @@ def launch(a , files) :
 
  	<processor name="HiggsProcessor" type="HiggsProcessor">
  		<parameter name="sqrtS" type="float">''' + str(a.sqrtS) + '''</parameter>
- 		<parameter name="dMin" type="float">''' + str(a.dMin) + '''</parameter>
+ 		<parameter name="yCut" type="float">''' + str(a.yCut) + '''</parameter>
   		<parameter name="valueAngle" type="float">''' + str(a.valueAngle) + '''</parameter>
  		<parameter name="alphaAngle" type="float">''' + str(a.alphaAngle) + '''</parameter>
 		<parameter name="RootFileName" type="string" >''' + a.outputFileName + '''</parameter>
@@ -59,7 +59,7 @@ def launch(a , files) :
 
 if __name__ == '__main__' :
 
-	dMin = 400
+	yCut = 0.006
 	os.environ["MARLIN_DLL"] = '/home/garillot/Code/HiggsStudies/lib/libHiggsStudies.so'
 
 	dir = '/home/garillot/files/ILD/dst/qqh'
@@ -83,11 +83,11 @@ if __name__ == '__main__' :
 	#		fileList.append(dir + '/' + fileName)
 
 	a = Params()
-	#a.dMin = dMin
+	a.yCut = yCut
 	#a.maxRecordNumber = 20000
-	a.valueAngle = -0.3
-	a.alphaAngle = 800
-	a.outputFileName = "qqHc800Old.root"
+	#a.valueAngle = -0.3
+	#a.alphaAngle = 800
+	a.outputFileName = "qqHOld_ycut.root"
 
 	launch(a,fileList)
 
