@@ -59,7 +59,7 @@ def launch(a , files) :
 
 if __name__ == '__main__' :
 
-	yCut = 0.006
+	yCut = 0.003
 	os.environ["MARLIN_DLL"] = '/home/garillot/Code/HiggsStudies/lib/libHiggsStudies.so'
 
 	dir = '/home/garillot/files/ILD/dst/qqh'
@@ -72,22 +72,22 @@ if __name__ == '__main__' :
 		if 'mILD_o2_v05.E250-TDR_ws.Pqqh.Gwhizard-1_95.eL.pR.I106485.' in fileName :
 			fileList.append(dir + '/' + fileName)
 
-	#dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
-	#print ('Searching files in ' + dir)
+	dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
+	print ('Searching files in ' + dir)
 
 	#list files
-	#fileList = []
+	fileList = []
 	
-	#for fileName in os.listdir(dir) :
-	#	if 'Pqqh.Gwhizard-1_95.eL.pR.I106485.' in fileName :
-	#		fileList.append(dir + '/' + fileName)
+	for fileName in os.listdir(dir) :
+		if 'Pqqh.Gwhizard-1_95.eL.pR.I106485.' in fileName :
+			fileList.append(dir + '/' + fileName)
 
 	a = Params()
 	a.yCut = yCut
 	#a.maxRecordNumber = 20000
 	#a.valueAngle = -0.3
 	#a.alphaAngle = 800
-	a.outputFileName = "qqHOld_ycut.root"
+	a.outputFileName = "qqH_y0.003New.root"
 
 	launch(a,fileList)
 

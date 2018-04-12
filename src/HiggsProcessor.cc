@@ -43,7 +43,7 @@ HiggsProcessor::HiggsProcessor()
 	registerProcessorParameter( "MCParticlesCollectionName" ,
 								"Name of the mc particles collection" ,
 								mcPartColName ,
-								std::string("MCParticlesSkimmed") ) ;
+								std::string("MCParticle") ) ;
 
 	registerProcessorParameter( "LinkCollectionName" ,
 								"Name of the mc truth link collection" ,
@@ -128,13 +128,11 @@ void HiggsProcessor::init()
 }
 
 
-std::vector<int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
+int HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 {
-	//	std::cout << "HiggsProcessor::findDecayMode(LCCollection* mcCol)" << std::endl ;
-
 	std::vector<int> toReturn ;
 	if ( _mcCol->getNumberOfElements() < 10 )
-		return toReturn ;
+		return 0 ;
 
 	MCParticleImpl* part = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 9 ) ) ;
 
@@ -150,7 +148,25 @@ std::vector<int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 	for ( unsigned int i = 0 ; i < vec.size() ; ++i )
 		toReturn.push_back( vec.at(i)->getPDG() ) ;
 
-	return toReturn ;
+	assert( toReturn.size() == 2 ) ;
+
+	if ( toReturn[0] != 22 && toReturn[0] != 24 )
+		assert( std::abs(toReturn[0]) == std::abs(toReturn[1]) ) ;
+
+	/*
+	if ( std::abs(toReturn[0]) == 24 ) //WW
+	{
+		auto vec0 = vec[0]->getDaughters() ;
+		auto vec1 = vec[1]->getDaughters() ;
+		assert( vec0.size() == 2 && vec1.size() == 2 ) ;
+		std::cout << "(" << vec0[0]->getPDG() << "," << vec0[1]->getPDG() << "," << vec1[0]->getPDG() << "," << vec1[1]->getPDG() << ")" << std::endl ;
+	}
+	*/
+
+	if ( std::abs(toReturn[0]) != std::abs(toReturn[1]) )
+		return 25 ;
+
+	return toReturn.at(0) ;
 }
 
 ISR HiggsProcessor::processISR()
@@ -550,7 +566,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	recMassIdeal = std::sqrt( (sqrtS - idealZDiJet.diJet().e() )*(sqrtS - idealZDiJet.diJet().e() ) - idealpZ ) ;
 
 
-	std::vector<int> vec = findDecayMode( evt->getCollection(mcPartColName) ) ;
+	decayID = findDecayMode( evt->getCollection(mcPartColName) ) ;
 
 
 	ISR isr = processISR() ;
@@ -736,7 +752,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	zTagged = zTaggedEnergy/totalZEnergy ;
 	zPurity = zTaggedEnergy/(zDiJet.jet1().e() + zDiJet.jet2().e()) ;
 
-	decayID = vec.at(0) ;
 	tree->Fill() ;
 
 	std::cout << "Event " << evt->getEventNumber() << std::endl ;

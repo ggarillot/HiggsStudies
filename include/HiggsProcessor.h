@@ -50,7 +50,7 @@ class HiggsProcessor : public Processor
 		virtual void end() ;
 
 
-		std::vector<int> findDecayMode(LCCollection* _mcCol) ;
+		int findDecayMode(LCCollection* _mcCol) ;
 
 		ISR processISR() ;
 
