@@ -62,69 +62,24 @@ if __name__ == '__main__' :
 	yCut = 0.003
 	os.environ["MARLIN_DLL"] = '/home/garillot/Code/HiggsStudies/lib/libHiggsStudies.so'
 
-	dir = '/home/garillot/files/ILD/dst/qqh'
-	print ('Searching files in ' + dir)
-
-	#list files
-	fileList = []
-
-	for fileName in os.listdir(dir) :
-		if 'mILD_o2_v05.E250-TDR_ws.Pqqh.Gwhizard-1_95.eL.pR.I106485.' in fileName :
-			fileList.append(dir + '/' + fileName)
-
+	#dir = '/home/garillot/files/ILD/dst/qqh'
+	#dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
+	#dir = '/home/garillot/files/ILD/v02-00'
 	dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
+
 	print ('Searching files in ' + dir)
 
 	#list files
 	fileList = []
-	
+
 	for fileName in os.listdir(dir) :
 		if 'Pqqh.Gwhizard-1_95.eL.pR.I106485.' in fileName :
 			fileList.append(dir + '/' + fileName)
 
 	a = Params()
 	a.yCut = yCut
-	#a.maxRecordNumber = 20000
-	#a.valueAngle = -0.3
-	#a.alphaAngle = 800
-	a.outputFileName = "qqH_y0.003New.root"
+	a.outputFileName = "test.root"
 
 	launch(a,fileList)
 
-'''
-	dir = '/home/garillot/files/ILD/dst/zz'
-	print ('Searching files in ' + dir)
-
-	#list files
-	fileList = []
-
-	for fileName in os.listdir(dir) :
-		if 'mILD_o2_v05.E250-TDR_ws.P4f_zz_h.Gwhizard-1_95.eL.pR.I106573.' in fileName :
-			fileList.append(dir + '/' + fileName)
-
-	a = Params()
-	a.dMin = dMin
-	a.outputFileName = "ZZ.root"
-
-	launch(a,fileList)
-
-	dir = '/home/garillot/files/ILD/dst/ww'
-	print ('Searching files in ' + dir)
-
-	#list files
-	fileList = []
-
-	for fileName in os.listdir(dir) :
-		if 'mILD_o2_v05.E250-TDR_ws.P4f_ww_h.Gwhizard-1_95.eL.pR.I106551.' in fileName :
-			fileList.append(dir + '/' + fileName)
-
-	#print 'File List :'
-	#print fileList
-
-	a = Params()
-	a.dMin = dMin
-	a.outputFileName = "WW.root"
-
-	launch(a,fileList)
-'''
 

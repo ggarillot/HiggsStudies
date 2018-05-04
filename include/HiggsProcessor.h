@@ -50,7 +50,7 @@ class HiggsProcessor : public Processor
 		virtual void end() ;
 
 
-		int findDecayMode(LCCollection* _mcCol) ;
+		std::pair<int,int> findDecayMode(LCCollection* _mcCol) ;
 
 		ISR processISR() ;
 
@@ -128,6 +128,7 @@ class HiggsProcessor : public Processor
 		double h1e = 0 ;
 		double h2e = 0 ;
 
+		double mass2Jet = 0 ;
 		double ww12mass = 0 ;
 		double ww34mass = 0 ;
 		double zz12mass = 0 ;
@@ -142,6 +143,7 @@ class HiggsProcessor : public Processor
 
 		//MC infos
 		int decayID = 0 ;
+		int subDecayID = 0 ;
 
 		double zPurity = 0 ;
 		double zTagged = 0 ;

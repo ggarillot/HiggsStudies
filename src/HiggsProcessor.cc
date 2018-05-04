@@ -98,6 +98,8 @@ void HiggsProcessor::init()
 	tree->Branch("h1e" , &h1e) ;
 	tree->Branch("h2e" , &h2e) ;
 
+	tree->Branch("mass2Jet" , &mass2Jet) ;
+
 	tree->Branch("ww12mass" , &ww12mass) ;
 	tree->Branch("ww34mass" , &ww34mass) ;
 	tree->Branch("zz12mass" , &zz12mass) ;
@@ -111,6 +113,7 @@ void HiggsProcessor::init()
 
 	//MC infos
 	tree->Branch("decayID" , &decayID) ;
+	tree->Branch("subDecayID" , &subDecayID) ;
 
 	tree->Branch("zPurity" , &zPurity) ;
 	tree->Branch("zTagged" , &zTagged) ;
@@ -128,11 +131,14 @@ void HiggsProcessor::init()
 }
 
 
-int HiggsProcessor::findDecayMode(LCCollection* _mcCol)
+std::pair<int, int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 {
-	std::vector<int> toReturn ;
+	std::pair<int,int> toReturn ;
+	int decay1 = 0 ;
+	int decay2 = 0 ;
+
 	if ( _mcCol->getNumberOfElements() < 10 )
-		return 0 ;
+		return {0,0} ;
 
 	MCParticleImpl* part = dynamic_cast<MCParticleImpl*>( _mcCol->getElementAt( 9 ) ) ;
 
@@ -144,29 +150,79 @@ int HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 
 	MCParticleVec vec = part->getDaughters() ;
 
+	assert ( vec.size() == 2 ) ;
 
-	for ( unsigned int i = 0 ; i < vec.size() ; ++i )
-		toReturn.push_back( vec.at(i)->getPDG() ) ;
+	toReturn = { std::abs( vec.at(0)->getPDG() ) , std::abs( vec.at(1)->getPDG() ) } ;
 
-	assert( toReturn.size() == 2 ) ;
+	decay1 = toReturn.first ;
 
-	if ( toReturn[0] != 22 && toReturn[0] != 24 )
-		assert( std::abs(toReturn[0]) == std::abs(toReturn[1]) ) ;
 
-	/*
-	if ( std::abs(toReturn[0]) == 24 ) //WW
+	if ( toReturn.first != 22 && toReturn.first != 23 )
+		assert( toReturn.first == toReturn.second ) ;
+
+
+	if ( ( toReturn.first == 24 || toReturn.first == 23 ) && toReturn.first == toReturn.second )
 	{
 		auto vec0 = vec[0]->getDaughters() ;
 		auto vec1 = vec[1]->getDaughters() ;
-		assert( vec0.size() == 2 && vec1.size() == 2 ) ;
-		std::cout << "(" << vec0[0]->getPDG() << "," << vec0[1]->getPDG() << "," << vec1[0]->getPDG() << "," << vec1[1]->getPDG() << ")" << std::endl ;
+
+		assert( vec0.size() == 2 &&  vec1.size() == 2 ) ;
+
+		std::array<int,4> subDecay = {} ;
+
+		int c = 0 ;
+		for ( const auto& i : vec0 )
+		{
+			if ( c > 3 )
+				continue ;
+			subDecay[c] = i->getPDG() ;
+			c++ ;
+		}
+		for ( const auto& i : vec1 )
+		{
+			if ( c > 3 )
+				continue ;
+			subDecay[c] = i->getPDG() ;
+			c++ ;
+		}
+
+		std::sort( subDecay.begin() , subDecay.end() ) ;
+
+		if ( subDecay[1] < 10 )
+		{
+			if ( subDecay[3] < 10 )
+				decay2 = 1 ;
+			else if ( subDecay[2]%2 != 0 && subDecay[3]%2 != 0 )
+				decay2 = 2 ;
+			else if ( subDecay[2]%2 == 0 && subDecay[3]%2 == 0 )
+				decay2 = 4 ;
+			else
+				decay2 = 3 ;
+		}
+		else
+		{
+			int nbNu = 0 ;
+			for ( const auto& i : subDecay )
+			{
+				if ( i%2 == 0 )
+					nbNu++ ;
+			}
+
+			if ( nbNu == 0 )
+				decay2 = 5 ;
+			else if ( nbNu == 2 )
+				decay2 = 6 ;
+			else
+				decay2 = 7 ;
+		}
 	}
-	*/
 
-	if ( std::abs(toReturn[0]) != std::abs(toReturn[1]) )
-		return 25 ;
 
-	return toReturn.at(0) ;
+	if ( toReturn.first != toReturn.second )
+		decay1 = 25 ;
+
+	toReturn = {decay1 , decay2} ;
+	return toReturn ;
 }
 
 ISR HiggsProcessor::processISR()
@@ -281,6 +337,14 @@ void HiggsProcessor::computeOriginMap()
 		ReconstructedParticleImpl* recoPart = dynamic_cast<ReconstructedParticleImpl*>( link->getFrom() ) ;
 		MCParticleImpl* mcPart = dynamic_cast<MCParticleImpl*>( link->getTo() ) ;
 
+		//		double weight = 0 ;
+
+		//		//Hence: trackwgt = (int(wgt)%10000)/1000. and  clusterwgt = (int(wgt)/10000)/1000.
+
+		//		if ( mcPart->getCharge() == 0 )
+		//			weight = ( int( link->getWeight() )/10000)/1000.0 ;
+		//		else
+		//			weight = ( int( link->getWeight() )%10000)/1000.0 ;
 
 		MCParticleImpl* mcPartParent = mcPart ;
 		int mcPartOrigin = mcPartParent->getPDG() ;
@@ -298,7 +362,8 @@ void HiggsProcessor::computeOriginMap()
 				break ;
 		}
 
-		originMap[recoPart].insert( { mcPartOrigin , recoPart->getEnergy()*link->getWeight()/weightMap.at(recoPart) } ) ;
+		//originMap[recoPart].insert( { mcPartOrigin , recoPart->getEnergy()*link->getWeight() } ) ;
+		originMap[recoPart].insert( { mcPartOrigin , recoPart->getEnergy() } ) ;
 	}
 }
 
@@ -565,15 +630,17 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	double idealpZ = idealZDiJet.diJet().pt()*idealZDiJet.diJet().pt() + idealZDiJet.diJet().pz()*idealZDiJet.diJet().pz() ;
 	recMassIdeal = std::sqrt( (sqrtS - idealZDiJet.diJet().e() )*(sqrtS - idealZDiJet.diJet().e() ) - idealpZ ) ;
 
-
-	decayID = findDecayMode( evt->getCollection(mcPartColName) ) ;
-
+	auto decay = findDecayMode( evt->getCollection(mcPartColName) ) ;
+	decayID = decay.first ;
+	subDecayID = decay.second ;
 
 	ISR isr = processISR() ;
 
 	ISREnergy = 0.0 ;
 	for ( const auto& i : isr.mcFourVec )
 		ISREnergy += i.e() ;
+
+	//2jet reconstruction
 
 
 	//WW and ZZ pair (background study)
@@ -589,6 +656,14 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	zz12mass = zzPair.first.diJet().m() ;
 	zz34mass = zzPair.second.diJet().m() ;
+
+
+
+	//2jet reconstruction
+	auto jets2 = sorted_by_pt( cs4.exclusive_jets(2) ) ;
+	auto dijet2 = jets2[0] + jets2[1] ;
+	mass2Jet = dijet2.m() ;
+
 
 
 	//main ZH clustering
