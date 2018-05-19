@@ -911,7 +911,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	cosThetaZ = zDiJet.diJet().pz() / zDiJet.diJet().modp() ;
 
 
-	cosThetaZ12 = std::acos(zDiJet.getCosAngleBetweenJets())/3.4145926 ;
+	cosThetaZ12 = std::acos(zDiJet.getCosAngleBetweenJets()) ;
 
 	z1e = zDiJet.jet1().e() ;
 	z2e = zDiJet.jet2().e() ;
