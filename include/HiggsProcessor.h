@@ -65,7 +65,7 @@ class HiggsProcessor : public Processor
 		double totalNeutrinoEnergy() ;
 
 		std::map<int,float> mcOriginOfParticle(ReconstructedParticleImpl* recoPart) ;
-		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet, fastjet::ClusterSequence& cs) ;
+		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet) ;
 
 		DiJet chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets , std::vector<fastjet::PseudoJet>& remainingJets) ;
 
@@ -76,7 +76,15 @@ class HiggsProcessor : public Processor
 		void operator=(const HiggsProcessor &toCopy) = delete ;
 
 	protected :
+		DiJet chooseDiJet(const std::vector<fastjet::PseudoJet>& jets , const double& targetMass) ;
 		std::pair<DiJet,DiJet> choosePairDiJets(const std::vector<fastjet::PseudoJet>& jets , const double& targetMass) ;
+
+
+		std::pair<int,int> findDecayModeSignal(LCCollection* _mcCol) ;
+		std::pair<int,int> findDecayModeWWqqqq(LCCollection* _mcCol) ;
+		std::pair<int,int> findDecayModeWWqqlv(LCCollection* _mcCol) ;
+		std::pair<int,int> findDecayModeZZqqqq(LCCollection* _mcCol) ;
+		std::pair<int,int> findDecayModeZZqqll(LCCollection* _mcCol) ;
 
 	protected :
 
@@ -86,6 +94,9 @@ class HiggsProcessor : public Processor
 
 		std::string mcPartColName = "" ;
 		std::string recoPartColName = "" ;
+		std::string isoLepColName = "" ;
+		std::string noIsoLepColName = "" ;
+
 		std::string linkColName = "" ;
 
 		LCCollection* mcCol = nullptr ;
@@ -96,6 +107,8 @@ class HiggsProcessor : public Processor
 		double alphaAngle = 0.0 ;
 		double valueAngle = 0.0 ;
 
+		fastjet::JetDefinition jetDef ;
+
 		std::vector<ReconstructedParticleImpl*> recoParticles = {} ;
 
 		std::vector<fastjet::PseudoJet> particles = {} ;
@@ -103,15 +116,28 @@ class HiggsProcessor : public Processor
 		std::vector<fastjet::PseudoJet> hParticles = {} ;
 		std::vector<fastjet::PseudoJet> allExceptHParticles = {} ;
 
+		std::array< std::vector<fastjet::PseudoJet> , 7 > fixedJets = {{}} ;
+
 		std::map<ReconstructedParticleImpl* , std::map<int,float> > originMap ;
 
 		std::string rootFileName = "" ;
 		TFile* file = nullptr ;
 		TTree* tree = nullptr ;
 
+		int processID = 0 ;
+
+		int runNumber = 0 ;
+		int evtNumber = 0 ;
+
+		bool goodEvent = true ;
+
 		double sqrtS = 0 ;
 
 		unsigned int nJets = 0 ;
+		unsigned int nIsoLep = 0 ;
+
+		double y23 = 0 ;
+		double y34 = 0 ;
 
 		double zMass = 0 ;
 		double recMass = 0 ;
@@ -129,16 +155,23 @@ class HiggsProcessor : public Processor
 		double h2e = 0 ;
 
 		double mass2Jet = 0 ;
+		double cosBetw2Jet = 0 ;
 		double ww12mass = 0 ;
 		double ww34mass = 0 ;
 		double zz12mass = 0 ;
 		double zz34mass = 0 ;
+
+		double wwMass3 = 0 ;
+		double wwRecMass3 = 0 ;
 
 		double totalEnergy = 0 ;
 		double totalEnergyJets = 0 ;
 
 		std::vector<double> pMiss = {} ;
 		double pMissNorm = 0 ;
+		double cosThetaMiss = 0 ;
+
+		double totalPt = 0 ;
 
 
 		//MC infos

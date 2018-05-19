@@ -13,54 +13,55 @@
 
 struct Event
 {
-		Event() ;
+		Event() = default ;
+		~Event() = default ;
+
+		int processID = 0 ;
+
+		bool goodEvent = true ;
 
 		double sqrtS = 0 ;
 
 		unsigned int nJets = 0 ;
+		unsigned int nIsoLep = 0 ;
+
+		double y23 = 0 ;
+		double y34 = 0 ;
 
 		double zMass = 0 ;
 		double recMass = 0 ;
 
-		double cosThetaZDiJet = 0 ;
-		double cosThetaHDiJet = 0 ;
+		double cosThetaZ = 0 ;
+		double cosThetaZ12 = 0 ;
 
 		double z1e = 0 ;
 		double z2e = 0 ;
-		double h1e = 0 ;
-		double h2e = 0 ;
+
+		double mass2Jet = 0 ;
 
 		double ww12mass = 0 ;
 		double ww34mass = 0 ;
 		double zz12mass = 0 ;
 		double zz34mass = 0 ;
 
-		double totalEnergy = 0 ;
-		double totalEnergyJets = 0 ;
+		double wwMass3 = 0 ;
+		double wwRecMass3 = 0 ;
 
+		double totalEnergy = 0 ;
 
 		//MC infos
 		int decayID = 0 ;
-
-		double zPurity = 0 ;
-		double zTagged = 0 ;
-
-		double zMassIdeal = 0 ;
-		double recMassIdeal = 0 ;
-
-		double cosThetaZDiJetIdeal = 0 ;
-		double cosThetaHDiJetIdeal = 0 ;
-
-		double ISREnergy = 0 ;
+		int subDecayID = 0 ;
 } ;
 
 class EventReader
 {
 	public :
-		EventReader() ;
-		~EventReader() ;
+		EventReader() = default ;
+		~EventReader() = default ;
 
 		Event getEvent(Long64_t entry) ;
+		void loadEvent(Event event) ;
 
 		void setTree(TTree* _tree) ;
 
@@ -75,43 +76,42 @@ class EventReader
 		TTree* tree = nullptr ;
 
 	protected :
+		int processID = 0 ;
+
+		bool goodEvent = true ;
+
 		double sqrtS = 0 ;
 
 		unsigned int nJets = 0 ;
+		unsigned int nIsoLep = 0 ;
+
+		double y23 = 0 ;
+		double y34 = 0 ;
 
 		double zMass = 0 ;
 		double recMass = 0 ;
 
-		double cosThetaZDiJet = 0 ;
-		double cosThetaHDiJet = 0 ;
+		double cosThetaZ = 0 ;
+		double cosThetaZ12 = 0 ;
 
 		double z1e = 0 ;
 		double z2e = 0 ;
-		double h1e = 0 ;
-		double h2e = 0 ;
+
+		double mass2Jet = 0 ;
 
 		double ww12mass = 0 ;
 		double ww34mass = 0 ;
 		double zz12mass = 0 ;
 		double zz34mass = 0 ;
 
-		double totalEnergy = 0 ;
-		double totalEnergyJets = 0 ;
+		double wwMass3 = 0 ;
+		double wwRecMass3 = 0 ;
 
+		double totalEnergy = 0 ;
 
 		//MC infos
 		int decayID = 0 ;
-
-		double zPurity = 0 ;
-		double zTagged = 0 ;
-
-		double zMassIdeal = 0 ;
-		double recMassIdeal = 0 ;
-
-		double cosThetaZDiJetIdeal = 0 ;
-		double cosThetaHDiJetIdeal = 0 ;
-
-		double ISREnergy = 0 ;
+		int subDecayID = 0 ;
 } ;
 
 

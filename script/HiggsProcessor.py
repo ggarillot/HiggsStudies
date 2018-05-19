@@ -5,6 +5,7 @@ import os
 class Params :
 	def __init__(self) :
 		self.outputFileName = 'test.root'
+		self.processID = 0
 		self.sqrtS = 250
 		self.yCut = 0
 		self.valueAngle = 0
@@ -38,6 +39,7 @@ def launch(a , files) :
  	</global>
 
  	<processor name="HiggsProcessor" type="HiggsProcessor">
+ 	 	<parameter name="ProcessID" type="float">''' + str(a.processID) + '''</parameter>
  		<parameter name="sqrtS" type="float">''' + str(a.sqrtS) + '''</parameter>
  		<parameter name="yCut" type="float">''' + str(a.yCut) + '''</parameter>
   		<parameter name="valueAngle" type="float">''' + str(a.valueAngle) + '''</parameter>
@@ -59,13 +61,13 @@ def launch(a , files) :
 
 if __name__ == '__main__' :
 
+	processID = '106485'
 	yCut = 0.003
 	os.environ["MARLIN_DLL"] = '/home/garillot/Code/HiggsStudies/lib/libHiggsStudies.so'
 
 	#dir = '/home/garillot/files/ILD/dst/qqh'
 	#dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
-	#dir = '/home/garillot/files/ILD/v02-00'
-	dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
+	dir = '/home/garillot/files/ILD/v02-00/Reconstructed/' + processID
 
 	print ('Searching files in ' + dir)
 
@@ -73,12 +75,13 @@ if __name__ == '__main__' :
 	fileList = []
 
 	for fileName in os.listdir(dir) :
-		if 'Pqqh.Gwhizard-1_95.eL.pR.I106485.' in fileName :
+		if processID + '.' in fileName :
 			fileList.append(dir + '/' + fileName)
 
 	a = Params()
+	a.processID = processID
 	a.yCut = yCut
-	a.outputFileName = "test.root"
+	a.outputFileName = 'test' + processID + '.root'
 
 	launch(a,fileList)
 
