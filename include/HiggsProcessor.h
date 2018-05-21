@@ -130,6 +130,7 @@ class HiggsProcessor : public Processor
 		int evtNumber = 0 ;
 
 		bool goodEvent = true ;
+		bool onlyNegative = false ;
 
 		double sqrtS = 0 ;
 
@@ -153,6 +154,8 @@ class HiggsProcessor : public Processor
 		double z2e = 0 ;
 		double h1e = 0 ;
 		double h2e = 0 ;
+
+		double pz = 0 ;
 
 		double mass2Jet = 0 ;
 		double cosBetw2Jet = 0 ;

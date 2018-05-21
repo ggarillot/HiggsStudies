@@ -100,6 +100,7 @@ void HiggsProcessor::init()
 	tree->Branch("evtNumber" , &evtNumber) ;
 
 	tree->Branch("goodEvent" , &goodEvent) ;
+	tree->Branch("onlyNegative" , &onlyNegative) ;
 
 	tree->Branch("sqrtS" , &sqrtS) ;
 
@@ -124,6 +125,9 @@ void HiggsProcessor::init()
 	tree->Branch("z2e" , &z2e) ;
 	tree->Branch("h1e" , &h1e) ;
 	tree->Branch("h2e" , &h2e) ;
+
+	tree->Branch("pz" , &pz) ;
+
 
 	tree->Branch("mass2Jet" , &mass2Jet) ;
 	tree->Branch("cosBetw2Jet" , &cosBetw2Jet) ;
@@ -502,11 +506,13 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 
 	DiJet goodDiJet ;
 
-	//assert( okJets.size() > 1 ) ;
+	onlyNegative = false ;
+
 	if ( okJets.size() < 2 )
 		throw std::logic_error("") ;
 
 	bool pairFound = false ;
+	onlyNegative = true ;
 	double chi2 = std::numeric_limits<double>::max() ;
 
 	std::pair<unsigned int , unsigned int> goodPair ;
@@ -533,6 +539,7 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 					goodDiJet = tempDiJet ;
 					goodPair = {i,j} ;
 					pairFound = true ;
+					onlyNegative = false ;
 				}
 			}
 		}
@@ -902,6 +909,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	zMass = zDiJet.diJet().m() ;
 	double pZ = zDiJet.diJet().modp2() ;
+	pz = pZ ;
 
 	double recMassSq = (sqrtS - zDiJet.diJet().e() )*(sqrtS - zDiJet.diJet().e() ) - pZ ;
 
