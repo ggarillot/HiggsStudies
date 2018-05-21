@@ -500,7 +500,7 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 				nb++ ;
 
 		}
-		if ( nb > 3 )
+		if ( nb > 1 )
 			okJets.push_back(jet) ;
 	}
 

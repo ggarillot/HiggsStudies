@@ -77,7 +77,6 @@ class EventReader
 
 	protected :
 
-
 		bool goodEvent = true ;
 
 		double sqrtS = 0 ;
