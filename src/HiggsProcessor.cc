@@ -719,7 +719,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	pMissNorm = std::sqrt(pMissNorm) ;
 
-
+/*
 	//compute perfect Z and H jets
 	assert(zParticles.size() > 1) ;
 
@@ -759,7 +759,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	double idealpZ = idealZDiJet.diJet().pt()*idealZDiJet.diJet().pt() + idealZDiJet.diJet().pz()*idealZDiJet.diJet().pz() ;
 	recMassIdeal = std::sqrt( (sqrtS - idealZDiJet.diJet().e() )*(sqrtS - idealZDiJet.diJet().e() ) - idealpZ ) ;
-
+*/
 	auto decay = findDecayMode( evt->getCollection(mcPartColName) ) ;
 	decayID = decay.first ;
 	subDecayID = decay.second ;
@@ -897,10 +897,11 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	a = std::min(a , sqrtS/(zDiJet.diJet().modp()+zDiJet.diJet().e())) ;
 	recMass2 = std::sqrt( (sqrtS - zDiJet.diJet().e()*std::sqrt(a) )*(sqrtS - zDiJet.diJet().e()*std::sqrt(a) ) - pZ*a ) ;
 
-
+/*
 	double a2 = (zMassRef*zMassRef)/invDiJet.diJet().m2() ;
 	double pZ2 = invDiJet.diJet().modp2() ;
 	recMassInv = std::sqrt( (sqrtS - invDiJet.diJet().e()*std::sqrt(a2) )*(sqrtS - invDiJet.diJet().e()*std::sqrt(a2) ) - pZ2*a2 ) ;
+*/
 
 	int targetNJetsH = std::min(static_cast<int>(remainingParticles.size()) , 2 ) ;
 
