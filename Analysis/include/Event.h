@@ -76,7 +76,7 @@ class EventReader
 		TTree* tree = nullptr ;
 
 	protected :
-		int processID = 0 ;
+
 
 		bool goodEvent = true ;
 
@@ -114,6 +114,7 @@ class EventReader
 		int subDecayID = 0 ;
 
 	public :
+		int processID = 0 ;
 		bool preRejected = false ;
 		float BDT = 0 ;
 		float weight = 0 ;

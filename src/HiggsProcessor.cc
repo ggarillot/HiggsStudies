@@ -506,6 +506,7 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 	if ( okJets.size() < 2 )
 		throw std::logic_error("") ;
 
+	bool pairFound = false ;
 	double chi2 = std::numeric_limits<double>::max() ;
 
 	std::pair<unsigned int , unsigned int> goodPair ;
@@ -521,15 +522,24 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 			if ( tempDiJet.getCosAngleBetweenJets() > valueAngle )
 				tempChi2 += alphaAngle*(tempDiJet.getCosAngleBetweenJets() - valueAngle)*(tempDiJet.getCosAngleBetweenJets() - valueAngle) ;
 
-
 			if ( tempChi2 < chi2 )
 			{
-				chi2 = tempChi2 ;
-				goodDiJet = tempDiJet ;
-				goodPair = {i,j} ;
+				double pZ_ = tempDiJet.diJet().modp2() ;
+				double recMassSq = (sqrtS - tempDiJet.diJet().e() )*(sqrtS - tempDiJet.diJet().e() ) - pZ_ ;
+
+				if ( recMassSq > 0 )
+				{
+					chi2 = tempChi2 ;
+					goodDiJet = tempDiJet ;
+					goodPair = {i,j} ;
+					pairFound = true ;
+				}
 			}
 		}
 	}
+
+	if ( !pairFound )
+		throw std::logic_error("") ;
 
 	for ( unsigned int i = 0 ; i < jets.size() ; ++i )
 	{
@@ -719,7 +729,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	pMissNorm = std::sqrt(pMissNorm) ;
 
-/*
+	/*
 	//compute perfect Z and H jets
 	assert(zParticles.size() > 1) ;
 
@@ -905,7 +915,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	a = std::min(a , sqrtS/(zDiJet.diJet().modp()+zDiJet.diJet().e())) ;
 	recMass2 = std::sqrt( (sqrtS - zDiJet.diJet().e()*std::sqrt(a) )*(sqrtS - zDiJet.diJet().e()*std::sqrt(a) ) - pZ*a ) ;
 
-/*
+	/*
 	double a2 = (zMassRef*zMassRef)/invDiJet.diJet().m2() ;
 	double pZ2 = invDiJet.diJet().modp2() ;
 	recMassInv = std::sqrt( (sqrtS - invDiJet.diJet().e()*std::sqrt(a2) )*(sqrtS - invDiJet.diJet().e()*std::sqrt(a2) ) - pZ2*a2 ) ;
