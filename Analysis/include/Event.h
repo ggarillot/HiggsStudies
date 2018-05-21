@@ -112,6 +112,12 @@ class EventReader
 		//MC infos
 		int decayID = 0 ;
 		int subDecayID = 0 ;
+
+	public :
+		bool preRejected = false ;
+		float BDT = 0 ;
+		float weight = 0 ;
+		float deltaE = 0 ;
 } ;
 
 

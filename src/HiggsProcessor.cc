@@ -571,7 +571,9 @@ DiJet HiggsProcessor::chooseDiJet(const std::vector<fastjet::PseudoJet>& jets , 
 
 std::pair<DiJet,DiJet> HiggsProcessor::choosePairDiJets(const std::vector<fastjet::PseudoJet>& jets , const double& targetMass)
 {
-	assert( jets.size() == 4 ) ;
+	if ( jets.size() != 4 )
+		throw std::logic_error("") ;
+
 	double chi2 = std::numeric_limits<double>::max() ;
 
 	std::pair<DiJet , DiJet> goodPair ;
@@ -604,13 +606,11 @@ std::pair<DiJet,DiJet> HiggsProcessor::choosePairDiJets(const std::vector<fastje
 
 std::pair<DiJet,DiJet> HiggsProcessor::choosePairOfZDiJets(const std::vector<fastjet::PseudoJet>& jets)
 {
-	assert( jets.size() == 4 ) ;
 	return choosePairDiJets(jets , zMassRef) ;
 }
 
 std::pair<DiJet,DiJet> HiggsProcessor::choosePairOfWDiJets(const std::vector<fastjet::PseudoJet>& jets)
 {
-	assert( jets.size() == 4 ) ;
 	return choosePairDiJets(jets , wMassRef) ;
 }
 
@@ -786,6 +786,14 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	y23 = -std::log10( csFixed.exclusive_ymerge(2) ) ;
 	y34 = -std::log10( csFixed.exclusive_ymerge(3) ) ;
 
+
+	if ( fixedJets[4].size() != 4 )
+	{
+		std::cout << "toto" << std::endl ;
+		goodEvent = false ;
+		tree->Fill() ;
+		return ;
+	}
 
 	//WW and ZZ pair (background study)
 	auto wwPair = choosePairOfWDiJets(fixedJets[4]) ;

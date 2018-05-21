@@ -47,7 +47,6 @@ Event EventReader::getEvent(Long64_t entry)
 	event.decayID = decayID ;
 	event.subDecayID = subDecayID ;
 
-
 	return event ;
 }
 
@@ -169,4 +168,9 @@ void EventReader::setTreeWrite(TTree* _tree)
 	//MC infos
 	_tree->Branch("decayID" , &decayID) ;
 	_tree->Branch("subDecayID" , &subDecayID) ;
+
+	_tree->Branch("preRejected" , &preRejected) ;
+	_tree->Branch("BDT" , &BDT) ;
+	_tree->Branch("weight" , &weight) ;
+	_tree->Branch("deltaE" , &deltaE) ;
 }
