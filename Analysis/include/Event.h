@@ -37,6 +37,8 @@ struct Event
 		double z1e = 0 ;
 		double z2e = 0 ;
 
+		double zPt = 0 ;
+
 		double mass2Jet = 0 ;
 
 		double ww12mass = 0 ;
@@ -97,6 +99,8 @@ class EventReader
 
 		double z1e = 0 ;
 		double z2e = 0 ;
+
+		double zPt = 0 ;
 
 		double mass2Jet = 0 ;
 

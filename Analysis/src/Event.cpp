@@ -31,6 +31,8 @@ Event EventReader::getEvent(Long64_t entry)
 	event.z1e = z1e ;
 	event.z2e = z2e ;
 
+	event.zPt = 0 ;
+
 	event.mass2Jet = mass2Jet ;
 
 	event.ww12mass = ww12mass ;
@@ -74,6 +76,8 @@ void EventReader::loadEvent(Event event)
 	z1e = event.z1e ;
 	z2e = event.z2e ;
 
+	zPt = event.zPt ;
+
 	mass2Jet = event.mass2Jet ;
 
 	ww12mass = event.ww12mass ;
@@ -114,6 +118,8 @@ void EventReader::setTree(TTree* _tree)
 
 	tree->SetBranchAddress("z1e" , &z1e) ;
 	tree->SetBranchAddress("z2e" , &z2e) ;
+
+	tree->SetBranchAddress("zPt" , &zPt) ;
 
 	tree->SetBranchAddress("mass2Jet" , &mass2Jet) ;
 
@@ -156,6 +162,8 @@ void EventReader::setTreeWrite(TTree* _tree)
 
 	_tree->Branch("z1e" , &z1e) ;
 	_tree->Branch("z2e" , &z2e) ;
+
+	_tree->Branch("zPt" , &zPt) ;
 
 	_tree->Branch("mass2Jet" , &mass2Jet) ;
 

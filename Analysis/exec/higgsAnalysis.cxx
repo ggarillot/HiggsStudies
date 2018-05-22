@@ -262,6 +262,8 @@ int main(int argc , char** argv)
 			continue ;
 		if ( !Cut::range(event) )
 			continue ;
+		if ( !Cut::angle(event) )
+			continue ;
 
 		nEventsMap.at( getProcess(event).name )[1] += eventReader.weight ;
 
@@ -273,7 +275,7 @@ int main(int argc , char** argv)
 		//		y23HistoMap.at( getProcess(event).name )->Fill(event.y23 , eventReader.weight) ;
 		//		y34HistoMap.at( getProcess(event).name )->Fill(event.y34 , eventReader.weight) ;
 
-		if ( eventReader.BDT < -0.005 )
+		if ( eventReader.BDT < -0.025 )
 			continue ;
 
 		if ( event.recMass < 100 || event.recMass > 160 )

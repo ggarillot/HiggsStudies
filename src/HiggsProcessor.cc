@@ -142,6 +142,10 @@ void HiggsProcessor::init()
 	tree->Branch("wwMass3" , &wwMass3) ;
 	tree->Branch("wwRecMass3" , &wwRecMass3) ;
 
+	tree->Branch("w12pt" , &w12pt) ;
+	tree->Branch("z12pt" , &z12pt) ;
+	tree->Branch("w3pt" , &w3pt) ;
+
 	tree->Branch("totalEnergy" , &totalEnergy) ;
 	tree->Branch("totalEnergyJets" , &totalEnergyJets) ;
 
@@ -824,11 +828,15 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	zz12mass = zzPair.first.diJet().m() ;
 	zz34mass = zzPair.second.diJet().m() ;
 
+	w12pt = wwPair.first.diJet().pt() ;
+	z12pt = zzPair.first.diJet().pt() ;
+
 	//WW->qqlv
 	auto qqlvDiJet = chooseDiJet(fixedJets[3] , wMassRef) ;
 	wwMass3 = qqlvDiJet.diJet().m() ;
 	wwRecMass3 = std::sqrt( (sqrtS - qqlvDiJet.diJet().E())*(sqrtS - qqlvDiJet.diJet().E()) - qqlvDiJet.diJet().modp2() ) ;
 
+	w3pt = qqlvDiJet.diJet().pt() ;
 
 	//2jet reconstruction
 	auto jets2 = fixedJets[2] ;
