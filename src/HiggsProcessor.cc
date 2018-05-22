@@ -126,6 +126,8 @@ void HiggsProcessor::init()
 	tree->Branch("h1e" , &h1e) ;
 	tree->Branch("h2e" , &h2e) ;
 
+	tree->Branch("zPt" , &zPt) ;
+
 	tree->Branch("pz" , &pz) ;
 
 
@@ -147,7 +149,7 @@ void HiggsProcessor::init()
 	tree->Branch("pMissNorm" , &pMissNorm) ;
 	tree->Branch("cosThetaMiss" , &cosThetaMiss) ;
 
-	tree->Branch("totalPt" , &totalPt) ;
+
 
 	//MC infos
 	tree->Branch("decayID" , &decayID) ;
@@ -696,8 +698,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	totalEnergy = 0 ;
 	double totalZEnergy = 0.0 ;
 
-	double totalPx = 0 ;
-	double totalPy = 0 ;
+//	double totalPx = 0 ;
+//	double totalPy = 0 ;
 
 	pMiss = {0,0,0} ;
 
@@ -709,8 +711,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		pMiss[1] += particle.py() ;
 		pMiss[2] += particle.pz() ;
 
-		totalPx += particle.px() ;
-		totalPy += particle.py() ;
+//		totalPx += particle.px() ;
+//		totalPy += particle.py() ;
 
 		if ( std::abs( particle.user_info<ParticleInfo>().origin() ) <= 6 )
 		{
@@ -728,7 +730,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	cosThetaMiss = pMissVec.cosTheta() ;
 
 	//temp
-	totalPt = std::sqrt(totalPx*totalPx + totalPy*totalPy) ;
+//	totalPt = std::sqrt(totalPx*totalPx + totalPy*totalPy) ;
 
 	pMissNorm = 0 ;
 	for ( const auto& i : pMiss )
@@ -863,15 +865,15 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	totalEnergyJets = 0.0 ;
 
-	totalPx = 0 ;
-	totalPy = 0 ;
-	totalPt = 0 ;
+//	totalPx = 0 ;
+//	totalPy = 0 ;
+//	totalPt = 0 ;
 	for ( const auto& jet : jets )
 	{
-		totalPx += jet.px() ;
-		totalPy += jet.py() ;
+//		totalPx += jet.px() ;
+//		totalPy += jet.py() ;
 
-		totalPt = std::max( totalPt , std::sqrt(jet.px()*jet.px() + jet.py()*jet.py()) ) ;
+//		totalPt = std::max( totalPt , std::sqrt(jet.px()*jet.px() + jet.py()*jet.py()) ) ;
 
 		totalEnergyJets += jet.e() ;
 	}
@@ -910,6 +912,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	zMass = zDiJet.diJet().m() ;
 	double pZ = zDiJet.diJet().modp2() ;
 	pz = pZ ;
+
+	zPt = zDiJet.diJet().pt() ;
 
 	double recMassSq = (sqrtS - zDiJet.diJet().e() )*(sqrtS - zDiJet.diJet().e() ) - pZ ;
 

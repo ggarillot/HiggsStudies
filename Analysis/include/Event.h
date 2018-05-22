@@ -47,6 +47,8 @@ struct Event
 		double wwMass3 = 0 ;
 		double wwRecMass3 = 0 ;
 
+		double cosThetaMiss = 0 ;
+
 		double totalEnergy = 0 ;
 
 		//MC infos
@@ -105,6 +107,8 @@ class EventReader
 
 		double wwMass3 = 0 ;
 		double wwRecMass3 = 0 ;
+
+		double cosThetaMiss = 0 ;
 
 		double totalEnergy = 0 ;
 

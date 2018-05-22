@@ -41,6 +41,7 @@ Event EventReader::getEvent(Long64_t entry)
 	event.wwMass3 = wwMass3 ;
 	event.wwRecMass3 = wwRecMass3 ;
 
+	event.cosThetaMiss = cosThetaMiss ;
 	event.totalEnergy = totalEnergy ;
 
 	//MC infos
@@ -83,6 +84,7 @@ void EventReader::loadEvent(Event event)
 	wwMass3 = event.wwMass3 ;
 	wwRecMass3 = event.wwRecMass3 ;
 
+	cosThetaMiss = event.cosThetaMiss ;
 	totalEnergy = event.totalEnergy ;
 
 	//MC infos
@@ -123,6 +125,8 @@ void EventReader::setTree(TTree* _tree)
 	tree->SetBranchAddress("wwMass3" , &wwMass3) ;
 	tree->SetBranchAddress("wwRecMass3" , &wwRecMass3) ;
 
+	tree->SetBranchAddress("cosThetaMiss" , &cosThetaMiss) ;
+
 	tree->SetBranchAddress("totalEnergy" , &totalEnergy) ;
 
 	//MC infos
@@ -162,6 +166,8 @@ void EventReader::setTreeWrite(TTree* _tree)
 
 	_tree->Branch("wwMass3" , &wwMass3) ;
 	_tree->Branch("wwRecMass3" , &wwRecMass3) ;
+
+	_tree->Branch("cosThetaMiss" , &cosThetaMiss) ;
 
 	_tree->Branch("totalEnergy" , &totalEnergy) ;
 

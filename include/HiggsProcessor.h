@@ -155,6 +155,8 @@ class HiggsProcessor : public Processor
 		double h1e = 0 ;
 		double h2e = 0 ;
 
+		double zPt = 0 ;
+
 		double pz = 0 ;
 
 		double mass2Jet = 0 ;
@@ -174,7 +176,7 @@ class HiggsProcessor : public Processor
 		double pMissNorm = 0 ;
 		double cosThetaMiss = 0 ;
 
-		double totalPt = 0 ;
+
 
 
 		//MC infos
