@@ -24,6 +24,7 @@ bool ZZ_h(const Event& event)
 
 bool WW_sl(const Event& event)
 {
+	return true ;
 	if ( !(event.wwMass3<85 && event.wwMass3>75) || !(event.wwRecMass3>60 && event.wwRecMass3<160) )
 		return true ;
 	else
@@ -40,7 +41,15 @@ bool range(const Event& event)
 
 bool angle(const Event& event)
 {
-	if ( event.zPt < 20 && std::abs(event.cosThetaMiss) < 0.9 )
+	if ( event.zPt > 20 && std::abs(event.cosThetaMiss) < 0.9 )
+		return true ;
+	else
+		return false ;
+}
+
+bool mass2Jet(const Event& event)
+{
+	if ( event.mass2Jet > 100 )
 		return true ;
 	else
 		return false ;

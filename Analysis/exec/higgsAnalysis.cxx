@@ -13,6 +13,7 @@
 #include "TColor.h"
 #include "TCanvas.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "THStack.h"
 #include "TStyle.h"
 #include "TLegend.h"
@@ -57,6 +58,24 @@ Process getProcess(const Event& event)
 		else
 			return processMap.at("ZZ->qqll") ;
 	}
+	else
+		throw ;
+}
+
+std::string getSubProcess(const Event& event)
+{
+	if ( event.processID != 106485 && event.processID != 106486 )
+		throw ;
+
+	if ( event.decayID != 24 )
+		throw ;
+
+	if ( event.subDecayID == 1 )
+		return std::string("WW->qqqq") ;
+	else if ( event.subDecayID == 3 )
+		return std::string("WW->qqlv") ;
+	else if ( event.subDecayID == 6 )
+		return std::string("WW->lvlv") ;
 	else
 		throw ;
 }
@@ -160,9 +179,26 @@ int main(int argc , char** argv)
 	std::map<std::string , TH1D*> y23HistoMap = {} ;
 	std::map<std::string , TH1D*> y34HistoMap = {} ;
 
+	std::map<std::string , TH1D*> zPtHistoMap = {} ;
+	std::map<std::string , TH1D*> mass2JetHistoMap = {} ;
+
+	std::map<std::string , TH1D*> cosThetaMissHistoMap = {} ;
+
 	std::map<std::string , TH1D*> recMassFinalHistoMap = {} ;
 
-	std::map<int , std::array<double,3> > nEventsDecayMap = {} ;
+	std::array<TH2D* , 2> zMassVsRecMassVec = {} ;
+	{
+		TH2D* histoS = new TH2D("histo2dS" , ";m_{Z} (GeV);m_{recoil}" , 200 , 70 , 110 , 200 , 100 , 200) ;
+		TH2D* histoB = new TH2D("histo2dB" , ";m_{Z} (GeV);m_{recoil}" , 200 , 70 , 110 , 200 , 100 , 200) ;
+		histoS->SetDirectory(0) ;
+		histoB->SetDirectory(0) ;
+		setStyle(histoS) ;
+		setStyle(histoB) ;
+		zMassVsRecMassVec[0] = histoS ;
+		zMassVsRecMassVec[1] = histoB ;
+	}
+
+	std::map<int , std::array<double,7> > nEventsDecayMap = {} ;
 
 	for ( const auto& process : processMap )
 	{
@@ -196,6 +232,21 @@ int main(int argc , char** argv)
 		histoy34->SetDirectory(0) ;
 		histoy34->SetLineColor(process.second.color) ;
 
+		std::stringstream totozPt ; totozPt << process.first << "_zPt" ;
+		TH1D* histozPt = new TH1D( totozPt.str().c_str() , ";Z_{P_{T}} (GeV);#normalized events" , 100 , 0 , 150 ) ;
+		histozPt->SetDirectory(0) ;
+		histozPt->SetLineColor(process.second.color) ;
+
+		std::stringstream toto2Jm ; toto2Jm << process.first << "_2jm" ;
+		TH1D* histoMass2Jet = new TH1D( toto2Jm.str().c_str() , ";m_{2jets} (GeV);#normalized events" , 100 , 0 , 250 ) ;
+		histoMass2Jet->SetDirectory(0) ;
+		histoMass2Jet->SetLineColor(process.second.color) ;
+
+		std::stringstream totocm ; totocm << process.first << "_cm" ;
+		TH1D* histoCosThetaMiss = new TH1D( totocm.str().c_str() , ";cos#theta_{miss};#normalized events" , 100 , -1 , 1 ) ;
+		histoCosThetaMiss->SetDirectory(0) ;
+		histoCosThetaMiss->SetLineColor(process.second.color) ;
+
 		std::stringstream toto7 ; toto7 << process.first << "_recMass" ;
 		TH1D* histoRecMassFinal = new TH1D( toto7.str().c_str() , ";m_{recoil} (GeV);n events" , 30 , 100 , 160 ) ;
 		histoRecMassFinal->SetDirectory(0) ;
@@ -216,6 +267,9 @@ int main(int argc , char** argv)
 		setStyle(histoThetaZ12) ;
 		setStyle(histoy23) ;
 		setStyle(histoy34) ;
+		setStyle(histozPt) ;
+		setStyle(histoMass2Jet) ;
+		setStyle(histoCosThetaMiss) ;
 		setStyle(histoRecMassFinal) ;
 
 		zMassHistoMap.insert( {process.first , histoZMass} ) ;
@@ -224,7 +278,9 @@ int main(int argc , char** argv)
 		thetaZ12HistoMap.insert( {process.first , histoThetaZ12} ) ;
 		y23HistoMap.insert( {process.first , histoy23} ) ;
 		y34HistoMap.insert( {process.first , histoy34} ) ;
-
+		zPtHistoMap.insert( {process.first , histozPt} ) ;
+		mass2JetHistoMap.insert( {process.first , histoMass2Jet} ) ;
+		cosThetaMissHistoMap.insert( {process.first , histoCosThetaMiss} ) ;
 		recMassFinalHistoMap.insert( {process.first , histoRecMassFinal} ) ;
 
 		nEventsMap.insert( { process.first , {{0,0,0}} } ) ;
@@ -243,10 +299,19 @@ int main(int argc , char** argv)
 		nEventsMap.at( getProcess(event).name )[0] += eventReader.weight ;
 
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
+		{
 			nEventsDecayMap[event.decayID][0] += eventReader.weight ;
+			if ( event.decayID == 24 || event.decayID == 23 )
+				nEventsDecayMap[event.decayID*10+event.subDecayID][0] += eventReader.weight ;
+		}
 
 		if ( !event.goodEvent )
 			continue ;
+
+		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
+			zMassVsRecMassVec[0]->Fill(event.zMass , event.recMass , eventReader.weight) ;
+		else
+			zMassVsRecMassVec[1]->Fill(event.zMass , event.recMass , eventReader.weight) ;
 
 		zMassHistoMap.at( getProcess(event).name )->Fill(event.zMass , eventReader.weight) ;
 		recMassHistoMap.at( getProcess(event).name )->Fill(event.recMass , eventReader.weight) ;
@@ -254,28 +319,52 @@ int main(int argc , char** argv)
 		y23HistoMap.at( getProcess(event).name )->Fill(event.y23 , eventReader.weight) ;
 		y34HistoMap.at( getProcess(event).name )->Fill(event.y34 , eventReader.weight) ;
 
+		zPtHistoMap.at( getProcess(event).name )->Fill(event.zPt , eventReader.weight) ;
+
+		mass2JetHistoMap.at( getProcess(event).name )->Fill(event.mass2Jet , eventReader.weight) ;
+
+		cosThetaMissHistoMap.at( getProcess(event).name )->Fill(event.cosThetaMiss , eventReader.weight) ;
+
 		if ( !Cut::WW_h(event) )
 			continue ;
-		if ( !Cut::ZZ_h(event) )
-			continue ;
-		if ( !Cut::WW_sl(event) )
-			continue ;
-		if ( !Cut::range(event) )
-			continue ;
-		if ( !Cut::angle(event) )
-			continue ;
-
-		nEventsMap.at( getProcess(event).name )[1] += eventReader.weight ;
-
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
 			nEventsDecayMap[event.decayID][1] += eventReader.weight ;
 
+		if ( !Cut::ZZ_h(event) )
+			continue ;
+		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
+			nEventsDecayMap[event.decayID][2] += eventReader.weight ;
+
+		if ( !Cut::WW_sl(event) )
+			continue ;
+		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
+			nEventsDecayMap[event.decayID][3] += eventReader.weight ;
+
+		if ( !Cut::range(event) )
+			continue ;
+		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
+			nEventsDecayMap[event.decayID][4] += eventReader.weight ;
+
+		if ( !Cut::mass2Jet(event) )
+			continue ;
+
+		if ( !Cut::angle(event) )
+			continue ;
+		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
+		{
+			nEventsDecayMap[event.decayID][5] += eventReader.weight ;
+			if ( event.decayID == 24 || event.decayID == 23 )
+				nEventsDecayMap[event.decayID*10+event.subDecayID][5] += eventReader.weight ;
+		}
+
+		nEventsMap.at( getProcess(event).name )[1] += eventReader.weight ;
+
+
 		cosThetaZHistoMap.at( getProcess(event).name )->Fill(event.cosThetaZ , eventReader.weight) ;
 		thetaZ12HistoMap.at( getProcess(event).name )->Fill(event.cosThetaZ12 , eventReader.weight) ;
-		//		y23HistoMap.at( getProcess(event).name )->Fill(event.y23 , eventReader.weight) ;
-		//		y34HistoMap.at( getProcess(event).name )->Fill(event.y34 , eventReader.weight) ;
 
-		if ( eventReader.BDT < -0.025 )
+
+		if ( eventReader.BDT < -0.033 )
 			continue ;
 
 		if ( event.recMass < 100 || event.recMass > 160 )
@@ -286,7 +375,11 @@ int main(int argc , char** argv)
 		nEventsMap.at( getProcess(event).name )[2] += eventReader.weight ;
 
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
-			nEventsDecayMap[event.decayID][2] += eventReader.weight ;
+		{
+			nEventsDecayMap[event.decayID][6] += eventReader.weight ;
+			if ( event.decayID == 24 || event.decayID == 23 )
+				nEventsDecayMap[event.decayID*10+event.subDecayID][6] += eventReader.weight ;
+		}
 	}
 
 	file->Close() ;
@@ -467,6 +560,87 @@ int main(int argc , char** argv)
 	addPolText(c6,polText) ;
 
 
+	TCanvas* czPt = new TCanvas("czPt" , "czPt" , 1000 , 1000) ;
+	czPt->cd() ;
+	setStyle(czPt) ;
+
+	maximum = std::numeric_limits<double>::min() ;
+	maxHisto = nullptr ;
+
+	for (const auto& histo : zPtHistoMap)
+	{
+		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
+		if ( max > maximum )
+		{
+			maximum = max ;
+			maxHisto = histo.second ;
+		}
+	}
+
+	maxHisto->DrawNormalized("HIST") ;
+	for (const auto& histo : zPtHistoMap)
+		histo.second->DrawNormalized("HIST same") ;
+	zPtHistoMap.at("ZH")->DrawNormalized("HIST same") ;
+
+	leg->Draw() ;
+	addWIP(czPt) ;
+	addPolText(czPt,polText) ;
+
+
+	TCanvas* czM2j = new TCanvas("czM2j" , "czM2j" , 1000 , 1000) ;
+	czM2j->cd() ;
+	setStyle(czM2j) ;
+
+	maximum = std::numeric_limits<double>::min() ;
+	maxHisto = nullptr ;
+
+	for (const auto& histo : mass2JetHistoMap)
+	{
+		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
+		if ( max > maximum )
+		{
+			maximum = max ;
+			maxHisto = histo.second ;
+		}
+	}
+
+	maxHisto->DrawNormalized("HIST") ;
+	for (const auto& histo : mass2JetHistoMap)
+		histo.second->DrawNormalized("HIST same") ;
+	mass2JetHistoMap.at("ZH")->DrawNormalized("HIST same") ;
+
+	leg->Draw() ;
+	addWIP(czM2j) ;
+	addPolText(czM2j,polText) ;
+
+
+	TCanvas* cCTM = new TCanvas("cCTM" , "cCTM" , 1000 , 1000) ;
+	cCTM->cd() ;
+	setStyle(cCTM) ;
+
+	maximum = std::numeric_limits<double>::min() ;
+	maxHisto = nullptr ;
+
+	for (const auto& histo : cosThetaMissHistoMap)
+	{
+		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
+		if ( max > maximum )
+		{
+			maximum = max ;
+			maxHisto = histo.second ;
+		}
+	}
+
+	maxHisto->DrawNormalized("HIST") ;
+	for (const auto& histo : cosThetaMissHistoMap)
+		histo.second->DrawNormalized("HIST same") ;
+	cosThetaMissHistoMap.at("ZH")->DrawNormalized("HIST same") ;
+
+	leg->Draw() ;
+	addWIP(cCTM) ;
+	addPolText(cCTM,polText) ;
+
+
 	TCanvas* c7 = new TCanvas("c7" , "c7" , 1000 , 1000) ;
 	c7->cd() ;
 	setStyle(c7) ;
@@ -505,6 +679,26 @@ int main(int argc , char** argv)
 	addLumiText(c7) ;
 
 
+	TCanvas* c2DS = new TCanvas("c2DS" , "c2DS" , 1000 , 1000) ;
+	c2DS->cd() ;
+	setStyle(c2DS) ;
+
+	zMassVsRecMassVec.at(0)->Draw("col") ;
+
+	addWIP(c2DS) ;
+	addPolText(c2DS,polText) ;
+
+
+	TCanvas* c2DB = new TCanvas("c2DB" , "c2DB" , 1000 , 1000) ;
+	c2DB->cd() ;
+	setStyle(c2DB) ;
+
+	zMassVsRecMassVec.at(1)->Draw("col") ;
+
+	addWIP(c2DB) ;
+	addPolText(c2DB,polText) ;
+
+
 	TFile* outputFile = new TFile("test.root" , "RECREATE") ;
 	outputFile->cd() ;
 
@@ -516,6 +710,11 @@ int main(int argc , char** argv)
 	c5->Write("c5") ;
 	c6->Write("c6") ;
 	c7->Write("c7") ;
+	czPt->Write("czPt") ;
+	czM2j->Write("czM2j") ;
+	c2DS->Write("c2DS") ;
+	c2DB->Write("c2DB") ;
+	cCTM->Write("cCTM") ;
 
 	outputFile->Close() ;
 
@@ -539,10 +738,21 @@ int main(int argc , char** argv)
 
 	for ( const auto& decayID : nEventsDecayMap )
 	{
-		double effPreCut = decayID.second[1]/decayID.second[0] ;
-		double effFinal = decayID.second[2]/decayID.second[0] ;
+		std::array<double,7> effVec = {} ;
+		for ( unsigned int i = 1 ; i < 7 ; ++i )
+		{
+			effVec.at(i) = decayID.second.at(i)/decayID.second[0] ;
+		}
+		double effPreCut = decayID.second[5]/decayID.second[0] ;
+		double effFinal = decayID.second[6]/decayID.second[0] ;
 
 		std::cout << "eff " << decayID.first << " : " << 100.0*effPreCut << " % , " << 100*effFinal << " %" << std::endl ;
+		//		std::cout << "eff " << decayID.first << " : " << 100.0*effVec.at(1) << " % , "
+		//				  << 100*effVec.at(2) << " % , "
+		//				  << 100*effVec.at(3) << " % , "
+		//				  << 100*effVec.at(4) << " % , "
+		//				  << 100*effVec.at(5) << " % , "
+		//				  << 100*effVec.at(6) << " % , " << std::endl ;
 	}
 
 	std::cout << "Scinificance : " << nEventsSignal/std::sqrt(nEventsSignal+nEventsBg) << std::endl ;

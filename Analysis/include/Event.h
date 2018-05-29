@@ -49,6 +49,10 @@ struct Event
 		double wwMass3 = 0 ;
 		double wwRecMass3 = 0 ;
 
+		double w12pt = 0 ;
+		double z12pt = 0 ;
+		double w3pt = 0 ;
+
 		double cosThetaMiss = 0 ;
 
 		double totalEnergy = 0 ;
@@ -111,6 +115,10 @@ class EventReader
 
 		double wwMass3 = 0 ;
 		double wwRecMass3 = 0 ;
+
+		double w12pt = 0 ;
+		double z12pt = 0 ;
+		double w3pt = 0 ;
 
 		double cosThetaMiss = 0 ;
 
