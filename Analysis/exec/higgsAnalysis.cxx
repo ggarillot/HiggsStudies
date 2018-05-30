@@ -31,12 +31,11 @@ struct Process
 static const std::map<std::string , Process> processMap =
 {
 	{"ZH" , {"ZH" , kBlack} } ,
-	{"Z->qq" , {"Z->qq" , kPink} },
-	{"WW->qqqq" , {"WW->qqqq" , kMagenta+2} },
-	{"WW->qqlv" , {"WW->qqlv" , kMagenta-4} },
-	{"ZZ->qqqq" , {"ZZ->qqqq" , kGreen+2} } ,
-	{"ZZ->qqll" , {"ZZ->qqll" , kGreen-3} } ,
-	{"ZZ->qqvv" , {"ZZ->qqvv" , kCyan+2} }
+	{"qq" , {"qq" , kRed-4} },
+	{"qqqq" , {"qqqq" , kRed-7} },
+	{"qqlv" , {"qqlv" , kCyan-3} },
+	{"qqll" , {"qqll" , kCyan-8} } ,
+	{"qqvv" , {"qqvv" , kCyan+2} }
 } ;
 
 Process getProcess(const Event& event)
@@ -44,20 +43,24 @@ Process getProcess(const Event& event)
 	if ( event.processID == 106485 || event.processID == 106486 )
 		return processMap.at("ZH") ;
 	else if ( event.processID == 106551 || event.processID == 106552 )
-		return processMap.at("WW->qqqq") ;
-	else if ( event.processID == 106577 || event.processID == 106578 )
-		return processMap.at("WW->qqlv") ;
+		return processMap.at("qqqq") ;
+	else if ( event.processID == 106577 || event.processID == 106578 || event.processID == 106564 || event.processID == 106566 || event.processID == 106563 || event.processID == 106565 )
+		return processMap.at("qqlv") ;
 	else if ( event.processID == 106573 || event.processID == 106574 )
-		return processMap.at("ZZ->qqqq") ;
+		return processMap.at("qqqq") ;
 	else if ( event.processID == 106607 || event.processID == 106608 )
-		return processMap.at("Z->qq") ;
+		return processMap.at("qq") ;
 	else if ( event.processID == 106575 || event.processID == 106576 )
 	{
 		if ( event.decayID%2 == 0 )
-			return processMap.at("ZZ->qqvv") ;
+			return processMap.at("qqvv") ;
 		else
-			return processMap.at("ZZ->qqll") ;
+			return processMap.at("qqll") ;
 	}
+	else if ( event.processID == 106560 || event.processID == 106562 || event.processID == 106559 || event.processID == 106561 )
+		return processMap.at("qqll") ;
+	else if ( event.processID == 106571 || event.processID == 106572 )
+		return processMap.at("qqvv") ;
 	else
 		throw ;
 }
@@ -130,6 +133,51 @@ void addLumiText(TCanvas* canvas)
 	latex->Draw() ;
 }
 
+
+TCanvas* drawCanvas(std::string canvasName , std::map<std::string , TH1D*> histoMap , std::string polText)
+{
+	TCanvas* canvas = new TCanvas(canvasName.c_str() , canvasName.c_str() , 1000 , 1000) ;
+	canvas->cd() ;
+	setStyle(canvas) ;
+
+	double maximum = std::numeric_limits<double>::min() ;
+	TH1D* maxHisto = nullptr ;
+
+	for (const auto& histo : histoMap)
+	{
+		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
+		if ( max > maximum )
+		{
+			maximum = max ;
+			maxHisto = histo.second ;
+		}
+	}
+
+	maxHisto->DrawNormalized("HIST") ;
+	for (const auto& histo : histoMap)
+		histo.second->DrawNormalized("HIST same") ;
+	histoMap.at("ZH")->DrawNormalized("HIST same") ;
+
+
+	//legend
+	TLegend* leg = new TLegend(0.65,0.65,0.88,0.88) ;
+	leg->SetBorderSize(0) ;
+	TLegendEntry* le = leg->AddEntry(histoMap.at("ZH") , "ZH" , "f") ;
+	le->SetTextColor( processMap.at("ZH").color ) ;
+	for ( const auto& histo : histoMap )
+	{
+		if ( histo.first.c_str() == std::string("ZH") )
+			continue ;
+		le = leg->AddEntry(histo.second , histo.first.c_str() , "f") ;
+		le->SetTextColor( processMap.at(histo.first).color ) ;
+	}
+	leg->Draw() ;
+	addWIP(canvas) ;
+	addPolText(canvas,polText) ;
+
+	return canvas ;
+}
+
 int main(int argc , char** argv)
 {
 	gStyle->SetOptStat(0) ;
@@ -172,6 +220,8 @@ int main(int argc , char** argv)
 	tree->SetBranchAddress("weight" , &eventReader.weight) ;
 
 	std::map<std::string , std::array<double,3> > nEventsMap = {} ;
+
+	std::map< std::string , std::map<std::string , TH1D*> > variablesMap = {} ;
 	std::map<std::string , TH1D*> zMassHistoMap = {} ;
 	std::map<std::string , TH1D*> recMassHistoMap = {} ;
 	std::map<std::string , TH1D*> cosThetaZHistoMap = {} ;
@@ -243,7 +293,7 @@ int main(int argc , char** argv)
 		histoMass2Jet->SetLineColor(process.second.color) ;
 
 		std::stringstream totocm ; totocm << process.first << "_cm" ;
-		TH1D* histoCosThetaMiss = new TH1D( totocm.str().c_str() , ";cos#theta_{miss};#normalized events" , 100 , -1 , 1 ) ;
+		TH1D* histoCosThetaMiss = new TH1D( totocm.str().c_str() , ";|cos#theta_{miss}|;#normalized events" , 150 , 0 , 1 ) ;
 		histoCosThetaMiss->SetDirectory(0) ;
 		histoCosThetaMiss->SetLineColor(process.second.color) ;
 
@@ -323,7 +373,7 @@ int main(int argc , char** argv)
 
 		mass2JetHistoMap.at( getProcess(event).name )->Fill(event.mass2Jet , eventReader.weight) ;
 
-		cosThetaMissHistoMap.at( getProcess(event).name )->Fill(event.cosThetaMiss , eventReader.weight) ;
+		cosThetaMissHistoMap.at( getProcess(event).name )->Fill(std::abs(event.cosThetaMiss) , eventReader.weight) ;
 
 		if ( !Cut::WW_h(event) )
 			continue ;
@@ -385,260 +435,16 @@ int main(int argc , char** argv)
 	file->Close() ;
 
 
-	TCanvas* c1 = new TCanvas("c1" , "c1" , 1000 , 1000) ;
-	c1->cd() ;
-	setStyle(c1) ;
+	TCanvas* c1 = drawCanvas("c1" , zMassHistoMap , polText) ;
+	TCanvas* c2 = drawCanvas("c2" , recMassHistoMap , polText) ;
+	TCanvas* c3 = drawCanvas("c3" , cosThetaZHistoMap , polText) ;
+	TCanvas* c4 = drawCanvas("c4" , thetaZ12HistoMap , polText) ;
+	TCanvas* c5 = drawCanvas("c5" , y23HistoMap , polText) ;
+	TCanvas* c6 = drawCanvas("c6" , y34HistoMap , polText) ;
+	TCanvas* czPt = drawCanvas("czPt" , zPtHistoMap , polText) ;
+	TCanvas* czM2j = drawCanvas("czM2j" , mass2JetHistoMap , polText) ;
+	TCanvas* cCTM = drawCanvas("cCTM" , cosThetaMissHistoMap , polText) ;
 
-	double maximum = std::numeric_limits<double>::min() ;
-	TH1D* maxHisto = nullptr ;
-
-	for (const auto& histo : zMassHistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : zMassHistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	zMassHistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-
-	//legend
-	TLegend* leg = new TLegend(0.65,0.65,0.88,0.88) ;
-	leg->SetBorderSize(0) ;
-	TLegendEntry* le = leg->AddEntry(zMassHistoMap.at("ZH") , "ZH" , "f") ;
-	le->SetTextColor( processMap.at("ZH").color ) ;
-	for ( const auto& histo : zMassHistoMap )
-	{
-		if ( histo.first.c_str() == std::string("ZH") )
-			continue ;
-		le = leg->AddEntry(histo.second , histo.first.c_str() , "f") ;
-		le->SetTextColor( processMap.at(histo.first).color ) ;
-	}
-	leg->Draw() ;
-	addWIP(c1) ;
-	addPolText(c1,polText) ;
-
-
-	TCanvas* c2 = new TCanvas("c2" , "c2" , 1000 , 1000) ;
-	c2->cd() ;
-	setStyle(c2) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : recMassHistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : recMassHistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	recMassHistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(c2) ;
-	addPolText(c2,polText) ;
-
-
-	TCanvas* c3 = new TCanvas("c3" , "c3" , 1000 , 1000) ;
-	c3->cd() ;
-	setStyle(c3) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : cosThetaZHistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : cosThetaZHistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	cosThetaZHistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(c3) ;
-	addPolText(c3,polText) ;
-
-
-	TCanvas* c4 = new TCanvas("c4" , "c4" , 1000 , 1000) ;
-	c4->cd() ;
-	setStyle(c4) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : thetaZ12HistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : thetaZ12HistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	thetaZ12HistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(c4) ;
-	addPolText(c4,polText) ;
-
-
-	TCanvas* c5 = new TCanvas("c5" , "c5" , 1000 , 1000) ;
-	c5->cd() ;
-	setStyle(c5) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : y23HistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : y23HistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	y23HistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(c5) ;
-	addPolText(c5,polText) ;
-
-
-	TCanvas* c6 = new TCanvas("c6" , "c6" , 1000 , 1000) ;
-	c6->cd() ;
-	setStyle(c6) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : y34HistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : y34HistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	y34HistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(c6) ;
-	addPolText(c6,polText) ;
-
-
-	TCanvas* czPt = new TCanvas("czPt" , "czPt" , 1000 , 1000) ;
-	czPt->cd() ;
-	setStyle(czPt) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : zPtHistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : zPtHistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	zPtHistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(czPt) ;
-	addPolText(czPt,polText) ;
-
-
-	TCanvas* czM2j = new TCanvas("czM2j" , "czM2j" , 1000 , 1000) ;
-	czM2j->cd() ;
-	setStyle(czM2j) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : mass2JetHistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : mass2JetHistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	mass2JetHistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(czM2j) ;
-	addPolText(czM2j,polText) ;
-
-
-	TCanvas* cCTM = new TCanvas("cCTM" , "cCTM" , 1000 , 1000) ;
-	cCTM->cd() ;
-	setStyle(cCTM) ;
-
-	maximum = std::numeric_limits<double>::min() ;
-	maxHisto = nullptr ;
-
-	for (const auto& histo : cosThetaMissHistoMap)
-	{
-		double max = histo.second->GetBinContent( histo.second->GetMaximumBin() )/histo.second->Integral() ;
-		if ( max > maximum )
-		{
-			maximum = max ;
-			maxHisto = histo.second ;
-		}
-	}
-
-	maxHisto->DrawNormalized("HIST") ;
-	for (const auto& histo : cosThetaMissHistoMap)
-		histo.second->DrawNormalized("HIST same") ;
-	cosThetaMissHistoMap.at("ZH")->DrawNormalized("HIST same") ;
-
-	leg->Draw() ;
-	addWIP(cCTM) ;
-	addPolText(cCTM,polText) ;
 
 
 	TCanvas* c7 = new TCanvas("c7" , "c7" , 1000 , 1000) ;
@@ -647,14 +453,13 @@ int main(int argc , char** argv)
 
 	THStack* hs = new THStack("hs",";m_{recoil} (GeV);nEvents/2GeV") ;
 
-	for ( const auto& histo : recMassFinalHistoMap )
-	{
-		if ( histo.first == std::string("ZH") || histo.first == std::string("Z->qq"))
-			continue ;
-		hs->Add(histo.second) ;
-	}
-	hs->Add( recMassFinalHistoMap.at("Z->qq") ) ;
-	hs->Add( recMassFinalHistoMap.at("ZH") ) ;
+	std::vector< std::string > chanVec = {"ZH" , "qq" , "qqqq" , "qqll" , "qqlv" , "qqvv"} ;
+	auto chanVecRev = chanVec ;
+	std::reverse(chanVecRev.begin() , chanVecRev.end() ) ;
+
+	for ( const auto& str : chanVecRev )
+		hs->Add( recMassFinalHistoMap.at(str) ) ;
+
 	hs->Draw("hist") ;
 	hs->GetXaxis()->SetLabelSize(0.025f) ;
 	hs->GetYaxis()->SetLabelSize(0.025f) ;
@@ -663,14 +468,11 @@ int main(int argc , char** argv)
 	//legend
 	TLegend* leg2 = new TLegend(0.65,0.65,0.88,0.88) ;
 	leg2->SetBorderSize(0) ;
-	TLegendEntry* le2 = leg2->AddEntry(recMassFinalHistoMap.at("ZH") , "ZH" , "f") ;
-	le2->SetTextColor( processMap.at("ZH").color ) ;
-	for ( const auto& histo : recMassFinalHistoMap )
+	for ( const auto& str : chanVec )
 	{
-		if ( histo.first.c_str() == std::string("ZH") )
-			continue ;
-		le2 = leg2->AddEntry(histo.second , histo.first.c_str() , "f") ;
-		le2->SetTextColor( processMap.at(histo.first).color ) ;
+		auto histo = recMassFinalHistoMap.at(str) ;
+		auto le2 = leg2->AddEntry(histo , str.c_str() , "f") ;
+		le2->SetTextColor( processMap.at(str).color ) ;
 	}
 	leg2->Draw() ;
 

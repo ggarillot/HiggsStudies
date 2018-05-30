@@ -568,7 +568,7 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 				nb++ ;
 
 		}
-		if ( nb > 1 )
+		if ( nb > 2 )
 			okJets.push_back(jet) ;
 	}
 
@@ -577,7 +577,7 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 	onlyNegative = false ;
 
 	if ( okJets.size() < 2 )
-		throw std::logic_error("") ;
+		throw std::logic_error("not enough jets") ;
 
 	bool pairFound = false ;
 	onlyNegative = true ;
@@ -614,7 +614,7 @@ DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets ,
 	}
 
 	if ( !pairFound )
-		throw std::logic_error("") ;
+		throw std::logic_error("no valid Z di-jet") ;
 
 	for ( unsigned int i = 0 ; i < jets.size() ; ++i )
 	{
@@ -935,20 +935,12 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	totalEnergyJets = 0.0 ;
 
-	//	totalPx = 0 ;
-	//	totalPy = 0 ;
-	//	totalPt = 0 ;
 	for ( const auto& jet : jets )
 	{
-		//		totalPx += jet.px() ;
-		//		totalPy += jet.py() ;
-
-		//		totalPt = std::max( totalPt , std::sqrt(jet.px()*jet.px() + jet.py()*jet.py()) ) ;
-
 		totalEnergyJets += jet.e() ;
 	}
 
-	//totalPt = std::sqrt(totalPx*totalPx + totalPy*totalPy) ;
+
 	nJets = jets.size() ;
 
 	std::vector<fastjet::PseudoJet> remainingJets ;
@@ -997,12 +989,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	a = std::min(a , sqrtS/(zDiJet.diJet().modp()+zDiJet.diJet().e())) ;
 	recMass2 = std::sqrt( (sqrtS - zDiJet.diJet().e()*std::sqrt(a) )*(sqrtS - zDiJet.diJet().e()*std::sqrt(a) ) - pZ*a ) ;
 
-	/*
-	double a2 = (zMassRef*zMassRef)/invDiJet.diJet().m2() ;
-	double pZ2 = invDiJet.diJet().modp2() ;
-	recMassInv = std::sqrt( (sqrtS - invDiJet.diJet().e()*std::sqrt(a2) )*(sqrtS - invDiJet.diJet().e()*std::sqrt(a2) ) - pZ2*a2 ) ;
-*/
-
 	int targetNJetsH = std::min(static_cast<int>(remainingParticles.size()) , 2 ) ;
 
 	fastjet::JetDefinition jDH(fastjet::ee_kt_algorithm) ;
@@ -1043,7 +1029,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	double hTaggedEnergy = 0 ;
 
 	zPurityJets = std::vector<double>(nJets , 0.0) ;
-	//	std::cout << "sdfsdfsdfsd" << std::endl ;
 	for ( const auto& origin : zDiJet.jet1().user_info<JetInfo>().mcOrigin() )
 	{
 		if ( std::abs(origin.first) <= 6 )
@@ -1056,7 +1041,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 		totalEnergyJetsVec.at(0) += origin.second ;
 	}
-	//	std::cout << "ererer" << std::endl ;
+
 	for ( const auto& origin : zDiJet.jet2().user_info<JetInfo>().mcOrigin() )
 	{
 		if ( std::abs(origin.first) <= 6 )
