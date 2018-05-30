@@ -72,9 +72,9 @@ std::string getSubProcess(const Event& event)
 
 	if ( event.subDecayID == 1 )
 		return std::string("WW->qqqq") ;
-	else if ( event.subDecayID == 3 )
+	else if ( event.subDecayID > 30 || event.subDecayID < 34 )
 		return std::string("WW->qqlv") ;
-	else if ( event.subDecayID == 6 )
+	else if ( event.subDecayID > 600 )
 		return std::string("WW->lvlv") ;
 	else
 		throw ;

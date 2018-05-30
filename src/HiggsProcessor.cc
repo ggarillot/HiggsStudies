@@ -189,7 +189,6 @@ std::pair<int,int> HiggsProcessor::findDecayModeSignal(LCCollection* _mcCol)
 	{
 		std::cout << "Error in HiggsProcessor::findDecayMode : Not a Higgs : " << part->getPDG() << std::endl ;
 		return toReturn ;
-		//		throw ;
 	}
 
 	MCParticleVec vec = part->getDaughters() ;
@@ -221,11 +220,31 @@ std::pair<int,int> HiggsProcessor::findDecayModeSignal(LCCollection* _mcCol)
 			if ( subDecay[3] < 10 ) //qqqq
 				decay2 = 1 ;
 			else if ( subDecay[2]%2 != 0 && subDecay[3]%2 != 0 ) //qqll
-				decay2 = 2 ;
+			{
+				if ( subDecay[2] == 11 )
+					decay2 = 21 ;
+				else if ( subDecay[2] == 13 )
+					decay2 = 22 ;
+				else if ( subDecay[2] == 15 )
+					decay2 = 23 ;
+				else
+					throw std::logic_error("weird qqll decay") ;
+			}
 			else if ( subDecay[2]%2 == 0 && subDecay[3]%2 == 0 ) //qqvv
+			{
 				decay2 = 4 ;
+			}
 			else //qqlv
-				decay2 = 3 ;
+			{
+				if ( subDecay[2] == 11 )
+					decay2 = 31 ;
+				else if ( subDecay[2] == 13 )
+					decay2 = 32 ;
+				else if ( subDecay[2] == 15 )
+					decay2 = 33 ;
+				else
+					throw std::logic_error("weird qqlv decay") ;
+			}
 		}
 		else
 		{
@@ -237,11 +256,54 @@ std::pair<int,int> HiggsProcessor::findDecayModeSignal(LCCollection* _mcCol)
 			}
 
 			if ( nbNu == 0 ) //llll
-				decay2 = 5 ;
+			{
+				decay2 = 500 ;
+				if ( subDecay[0] == 11 )
+					decay2 += 10 ;
+				else if ( subDecay[0] == 13 )
+					decay2 += 20 ;
+				else if ( subDecay[0] == 15 )
+					decay2 += 30 ;
+				else
+					throw std::logic_error("weird llll decay") ;
+
+				if ( subDecay[2] == 11 )
+					decay2 += 1 ;
+				else if ( subDecay[2] == 13 )
+					decay2 += 2 ;
+				else if ( subDecay[2] == 15 )
+					decay2 += 3 ;
+				else
+					throw std::logic_error("weird llll decay") ;
+			}
 			else if ( nbNu == 2 ) //llvv
-				decay2 = 6 ;
+			{
+				decay2 = 600 ;
+				std::vector<int> temp = {} ;
+				for ( const auto& i : subDecay )
+				{
+					if ( i%2 != 0 )
+					{
+						if ( i == 11 )
+							temp.push_back(1) ;
+						else if ( i == 13 )
+							temp.push_back(2) ;
+						else if ( i == 15 )
+							temp.push_back(3) ;
+						else
+							throw std::logic_error("weird llvv decay") ;
+					}
+				}
+
+				if ( temp.size() != 2 )
+					throw std::logic_error("weird llvv decay") ;
+
+				decay2 = decay2 + 10*temp[0] + temp[1] ;
+			}
 			else //vvvv
+			{
 				decay2 = 7 ;
+			}
 		}
 	}
 
@@ -702,8 +764,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	totalEnergy = 0 ;
 	double totalZEnergy = 0.0 ;
 
-//	double totalPx = 0 ;
-//	double totalPy = 0 ;
+	//	double totalPx = 0 ;
+	//	double totalPy = 0 ;
 
 	pMiss = {0,0,0} ;
 
@@ -715,8 +777,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		pMiss[1] += particle.py() ;
 		pMiss[2] += particle.pz() ;
 
-//		totalPx += particle.px() ;
-//		totalPy += particle.py() ;
+		//		totalPx += particle.px() ;
+		//		totalPy += particle.py() ;
 
 		if ( std::abs( particle.user_info<ParticleInfo>().origin() ) <= 6 )
 		{
@@ -734,7 +796,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	cosThetaMiss = pMissVec.cosTheta() ;
 
 	//temp
-//	totalPt = std::sqrt(totalPx*totalPx + totalPy*totalPy) ;
+	//	totalPt = std::sqrt(totalPx*totalPx + totalPy*totalPy) ;
 
 	pMissNorm = 0 ;
 	for ( const auto& i : pMiss )
@@ -873,15 +935,15 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	totalEnergyJets = 0.0 ;
 
-//	totalPx = 0 ;
-//	totalPy = 0 ;
-//	totalPt = 0 ;
+	//	totalPx = 0 ;
+	//	totalPy = 0 ;
+	//	totalPt = 0 ;
 	for ( const auto& jet : jets )
 	{
-//		totalPx += jet.px() ;
-//		totalPy += jet.py() ;
+		//		totalPx += jet.px() ;
+		//		totalPy += jet.py() ;
 
-//		totalPt = std::max( totalPt , std::sqrt(jet.px()*jet.px() + jet.py()*jet.py()) ) ;
+		//		totalPt = std::max( totalPt , std::sqrt(jet.px()*jet.px() + jet.py()*jet.py()) ) ;
 
 		totalEnergyJets += jet.e() ;
 	}
