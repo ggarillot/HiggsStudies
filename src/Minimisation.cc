@@ -17,7 +17,7 @@ Minimisation::Minimisation(unsigned int nParam_)
 	: nParam(nParam_)
 {
 	bestParam = std::vector<double>(nParam , 0) ;
-	limitsParam = std::vector<Limits>(nParam , kNoLimit) ;
+	limitsParam = std::vector<std::pair<double,double>>(nParam , {std::numeric_limits<double>::min() , std::numeric_limits<double>::max()}) ;
 	nameParam = std::vector<std::string>(nParam , "") ;
 
 	for ( unsigned int i = 0 ; i < nParam ; ++i )
@@ -42,9 +42,6 @@ double Minimisation::minimize()
 	double prevMin = eval(bestParam) ;
 	cout << "prevMin : " << prevMin << endl ;
 
-	//	ROOT::Math::GSLSimAnMinimizer min ;
-	//	 ROOT::Math::GSLMinimizer min ;
-	//	ROOT::Minuit2::Minuit2Minimizer min ( ROOT::Minuit2::kCombined ) ;
 	ROOT::Minuit2::Minuit2Minimizer min ;
 	min.SetMaxFunctionCalls(400000) ;
 	min.SetMaxIterations(2) ;
@@ -56,20 +53,7 @@ double Minimisation::minimize()
 	min.SetFunction(f) ;
 
 	for( unsigned int i = 0 ; i < nParam ; i++ )
-	{
-		if ( limitsParam[i] == kNoLimit )
-			min.SetVariable(i , nameParam[i].c_str() , bestParam[i] , step) ;
-		else if ( limitsParam[i] == kNegative )
-		{
-			bestParam[i] = std::min(bestParam[i] , 0.0-std::numeric_limits<double>::epsilon() ) ;
-			min.SetUpperLimitedVariable(i , nameParam[i].c_str() , bestParam[i] , step , 0) ;
-		}
-		else
-		{
-			bestParam[i] = std::max(bestParam[i] , 0.0+std::numeric_limits<double>::epsilon() ) ;
-			min.SetLowerLimitedVariable(i , nameParam[i].c_str() , bestParam[i] , step , 0) ;
-		}
-	}
+		min.SetLimitedVariable(i , nameParam[i].c_str() , bestParam[i] , step , limitsParam[i].first , limitsParam[i].second ) ;
 
 
 	min.Minimize() ;
@@ -104,17 +88,58 @@ void Minimisation::setParams(std::vector<double> values)
 	bestParam = values ;
 }
 
-ThrustAxisComputer::ThrustAxisComputer(const std::vector<fastjet::PseudoJet> _particles)
+ThrustAxisComputer::ThrustAxisComputer(const std::vector<fastjet::PseudoJet> particles)
 	: Minimisation(2)
 {
-	particles = &_particles ;
+	for ( const auto& particle : particles )
+		pVec.push_back( CLHEP::Hep3Vector( particle.px() , particle.py() , particle.pz() ) ) ;
+
+	limitsParam[0] = {0 , 2*3.1415926536} ;
+	limitsParam[1] = {0 , 3.1415926536} ;
 }
 
 double ThrustAxisComputer::functionToMinimize(const double* param)
 {
-	double x = param[0] ;
-	double y = param[1] ;
-	double pi = M_PI ;
+	double cp = std::cos(param[0]) ;
+	double ct = std::cos(param[1]) ;
 
-	return -cos(x)*cos(y)*exp( -( (x-pi)*(x-pi) + (y-pi)*(y-pi) ) ) ;
+	double sp = std::sqrt(1-cp*cp) ;
+	double st = std::sqrt(1-ct*ct) ;
+
+	CLHEP::Hep3Vector n(cp*st , sp*st , ct) ;
+
+	double sum = 0 ;
+
+	for ( const auto& p : pVec )
+		sum += p.dot(n) ;
+
+	return -sum ;
+}
+
+MajorThrustAxisComputer::MajorThrustAxisComputer(const std::vector<fastjet::PseudoJet> particles , CLHEP::Hep3Vector ref)
+	: Minimisation(2)
+{
+	for ( const auto& particle : particles )
+		pVec.push_back( -( CLHEP::Hep3Vector( particle.px() , particle.py() , particle.pz() ).cross(ref) ).cross(ref) ) ;
+
+	limitsParam[0] = {0 , 2*3.1415926536} ;
+	limitsParam[1] = {0 , 3.1415926536} ;
+}
+
+double MajorThrustAxisComputer::functionToMinimize(const double* param)
+{
+	double cp = std::cos(param[0]) ;
+	double ct = std::cos(param[1]) ;
+
+	double sp = std::sqrt(1-cp*cp) ;
+	double st = std::sqrt(1-ct*ct) ;
+
+	CLHEP::Hep3Vector n(cp*st , sp*st , ct) ;
+
+	double sum = 0 ;
+
+	for ( const auto& p : pVec )
+		sum += p.dot(n) ;
+
+	return -sum ;
 }

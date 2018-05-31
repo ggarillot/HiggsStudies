@@ -69,6 +69,9 @@ class HiggsProcessor : public Processor
 		Eigen::Matrix3d computeSphericityTensor( const std::vector<fastjet::PseudoJet>& particleVec ) ;
 		double computeSphericity( const std::vector<fastjet::PseudoJet>& particleVec ) ;
 
+		CLHEP::Hep3Vector computeThrustAxis( const std::vector<fastjet::PseudoJet>& particleVec ) ;
+		std::array<double,2> computeThrust( const std::vector<fastjet::PseudoJet>& particleVec ) ;
+
 		std::map<int,float> mcOriginOfParticle(ReconstructedParticleImpl* recoPart) ;
 		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet) ;
 

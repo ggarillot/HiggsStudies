@@ -5,6 +5,7 @@
 #include <string>
 
 #include <fastjet/PseudoJet.hh>
+#include <CLHEP/Vector/ThreeVector.h>
 
 class Minimisation
 {
@@ -18,8 +19,6 @@ class Minimisation
 
 		virtual void printParam() const ;
 
-		enum Limits { kNoLimit , kNegative , kPositive } ;
-
 		std::vector<double> getParams() const { return bestParam ; }
 
 		void setParams(std::vector<double> values) ;
@@ -28,7 +27,7 @@ class Minimisation
 	protected :
 		unsigned int nParam ;
 		std::vector<double> bestParam = {} ;
-		std::vector<Limits> limitsParam = {} ;
+		std::vector<std::pair<double,double>> limitsParam = {} ;
 		std::vector<std::string> nameParam = {} ;
 		double step = 0.2 ;
 
@@ -37,13 +36,25 @@ class Minimisation
 class ThrustAxisComputer : public Minimisation
 {
 	public :
-		ThrustAxisComputer(const std::vector<fastjet::PseudoJet> _particles) ;
+		ThrustAxisComputer(const std::vector<fastjet::PseudoJet> particles) ;
 
 		double functionToMinimize(const double* param) ;
 
 	protected :
-		const std::vector<fastjet::PseudoJet>* particles = nullptr ;
+		std::vector<CLHEP::Hep3Vector> pVec = {} ;
 
+
+} ;
+
+class MajorThrustAxisComputer : public Minimisation
+{
+	public :
+		MajorThrustAxisComputer(const std::vector<fastjet::PseudoJet> particles , CLHEP::Hep3Vector ref) ;
+
+		double functionToMinimize(const double* param) ;
+
+	protected :
+		std::vector<CLHEP::Hep3Vector> pVec = {} ;
 
 } ;
 

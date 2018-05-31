@@ -19,6 +19,7 @@
 #include "marlin/VerbosityLevels.h"
 #include <string.h>
 
+#include "Minimisation.h"
 
 using namespace lcio ;
 using namespace marlin ;
@@ -583,6 +584,34 @@ double HiggsProcessor::computeSphericity( const std::vector<fastjet::PseudoJet>&
 
 	return 1.5*(val[1]+val[2]) ;
 }
+
+CLHEP::Hep3Vector HiggsProcessor::computeThrustAxis( const std::vector<fastjet::PseudoJet>& particleVec )
+{
+	ThrustAxisComputer minim(particleVec) ;
+	minim.minimize() ;
+
+	auto params = minim.getParams() ;
+
+	CLHEP::Hep3Vector vec( std::cos(params[0])*std::sin(params[1]) , std::sin(params[0])*std::sin(params[1]) , std::cos(params[1])) ;
+	return vec ;
+}
+
+std::array<double,2> HiggsProcessor::computeThrust( const std::vector<fastjet::PseudoJet>& particleVec )
+{
+	auto vec = computeThrustAxis( particleVec ) ;
+
+	double num = 0 ;
+	double denom = 0 ;
+
+	for ( const auto& particle : particleVec )
+	{
+		denom += particle.modp() ;
+		num += std::abs( particle.px()*vec.x() + particle.py()*vec.y() + particle.pz()*vec.z()) ;
+	}
+
+	double tMaj = num/denom ;
+}
+
 
 DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets , std::vector<fastjet::PseudoJet>& remainingJets)
 {
