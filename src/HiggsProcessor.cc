@@ -594,18 +594,10 @@ double HiggsProcessor::computeSphericity( const std::vector<fastjet::PseudoJet>&
 
 CLHEP::Hep3Vector HiggsProcessor::computeThrustAxis( const std::vector<fastjet::PseudoJet>& particleVec )
 {
-//	ThrustAxisComputer minim(particleVec) ;
-//	minim.minimize() ;
-
-//	auto params = minim.getParams() ;
-
-//	CLHEP::Hep3Vector vec( std::cos(params[0])*std::sin(params[1]) , std::sin(params[0])*std::sin(params[1]) , std::cos(params[1])) ;
-//	return vec ;
-
 	EventShape shape ;
 	shape.setPartList(particleVec) ;
 
-	return CLHEP::Hep3Vector( shape.thrustAxis()(0) , shape.thrustAxis()(1) , shape.thrustAxis()(2) ) ;
+	return shape.thrustAxis() ;
 }
 
 std::array<double,2> HiggsProcessor::computeThrust( const std::vector<fastjet::PseudoJet>& particleVec )
