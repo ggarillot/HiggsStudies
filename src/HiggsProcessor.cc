@@ -19,8 +19,6 @@
 #include "marlin/VerbosityLevels.h"
 #include <string.h>
 
-#include "Minimisation.h"
-
 #include "EventShape.h"
 
 using namespace lcio ;
