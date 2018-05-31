@@ -20,6 +20,8 @@
 #include <fastjet/ClusterSequence.hh>
 #include <fastjet/JadePlugin.hh>
 
+#include <Eigen/Dense>
+
 #include <TROOT.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -63,6 +65,8 @@ class HiggsProcessor : public Processor
 
 		void computeOriginMap() ;
 		double totalNeutrinoEnergy() ;
+
+
 
 		std::map<int,float> mcOriginOfParticle(ReconstructedParticleImpl* recoPart) ;
 		std::map<int,float> mcOriginOfJet(const fastjet::PseudoJet& jet) ;
