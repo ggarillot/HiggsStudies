@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cassert>
 #include <cmath>
+#include <complex>
 
 #include <EVENT/LCCollection.h>
 #include <EVENT/MCParticle.h>
@@ -546,6 +547,41 @@ std::map<int,float> HiggsProcessor::mcOriginOfJet(const fastjet::PseudoJet& jet)
 	}
 
 	return toReturn ;
+}
+
+Eigen::Matrix3d HiggsProcessor::computeSphericityTensor( const std::vector<fastjet::PseudoJet>& particleVec )
+{
+	Eigen::Matrix3d tensor ;
+
+	for ( unsigned int i = 0 ; i < 3 ; ++i )
+	{
+		for ( unsigned int j = 0 ; j < 3 ; ++j )
+		{
+			double num = 0 ;
+			double denom = 0 ;
+
+			for ( const auto& particle : particleVec )
+			{
+				num += particle.four_mom()[i]*particle.four_mom()[j] ;
+				denom += particle.modp2() ;
+			}
+			tensor(i,j) = num/denom ;
+		}
+	}
+
+	return tensor ;
+}
+
+double HiggsProcessor::computeSphericity( const std::vector<fastjet::PseudoJet>& particleVec )
+{
+	auto tensor = computeSphericityTensor( particleVec ) ;
+
+	auto eigenVal = tensor.eigenvalues() ;
+
+	std::array<double,3> val = {{ std::norm(eigenVal(0)) , std::norm(eigenVal(1)) , std::norm(eigenVal(2)) }} ;
+	std::sort(val.begin() , val.end()) ;
+
+	return 1.5*(val[1]+val[2]) ;
 }
 
 DiJet HiggsProcessor::chooseZDiJet(const std::vector<fastjet::PseudoJet>& jets , std::vector<fastjet::PseudoJet>& remainingJets)
