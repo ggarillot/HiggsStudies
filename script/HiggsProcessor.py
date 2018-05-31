@@ -63,11 +63,11 @@ if __name__ == '__main__' :
 
 	processID = '106485'
 	yCut = 0.003
-	os.environ["MARLIN_DLL"] = '/home/garillot/Code/HiggsStudies/lib/libHiggsStudies.so'
+	os.environ["MARLIN_DLL"] = '/home/guillaume/HiggsStudies/lib/libHiggsStudies.so'
 
 	#dir = '/home/garillot/files/ILD/dst/qqh'
 	#dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
-	dir = '/home/garillot/files/ILD/v02-00/Reconstructed/' + processID
+	dir = '/home/guillaume/files/ILD/v02-00/Reconstructed/' + processID
 
 	print ('Searching files in ' + dir)
 

@@ -145,6 +145,9 @@ class HiggsProcessor : public Processor
 		unsigned int nJets = 0 ;
 		unsigned int nIsoLep = 0 ;
 
+        double sphericity = 0 ;
+        double cosThrust = 0 ;
+
 		double y23 = 0 ;
 		double y34 = 0 ;
 

@@ -38,15 +38,15 @@ double Minimisation::minimize()
 	assert( bestParam.size() == limitsParam.size() ) ;
 	assert( bestParam.size() == nParam ) ;
 
-	cout << "Launching minimizing" << endl ;
+//	cout << "Launching minimizing" << endl ;
 	double prevMin = eval(bestParam) ;
-	cout << "prevMin : " << prevMin << endl ;
+//	cout << "prevMin : " << prevMin << endl ;
 
 	ROOT::Minuit2::Minuit2Minimizer min ;
 	min.SetMaxFunctionCalls(400000) ;
 	min.SetMaxIterations(2) ;
-	min.SetTolerance(1e-3) ;
-	min.SetPrintLevel(2) ;
+    min.SetTolerance(1e-4) ;
+    min.SetPrintLevel(0) ;
 
 	ROOT::Math::Functor f(this , &Minimisation::functionToMinimize , nParam) ;
 
@@ -67,6 +67,7 @@ double Minimisation::minimize()
 			bestParam[i] = xs[i] ;
 	}
 
+    std::cout << min.Status() << std::endl ;
 	return eval(bestParam) ;
 }
 
@@ -94,19 +95,25 @@ ThrustAxisComputer::ThrustAxisComputer(const std::vector<fastjet::PseudoJet> par
 	for ( const auto& particle : particles )
 		pVec.push_back( CLHEP::Hep3Vector( particle.px() , particle.py() , particle.pz() ) ) ;
 
-	limitsParam[0] = {0 , 2*3.1415926536} ;
-	limitsParam[1] = {0 , 3.1415926536} ;
+    limitsParam[0] = {-1 , 1} ;
+    limitsParam[1] = {-1 , 1} ;
 }
 
 double ThrustAxisComputer::functionToMinimize(const double* param)
 {
-	double cp = std::cos(param[0]) ;
-	double ct = std::cos(param[1]) ;
+//	double cp = std::cos(param[0]) ;
+//	double ct = std::cos(param[1]) ;
 
-	double sp = std::sqrt(1-cp*cp) ;
-	double st = std::sqrt(1-ct*ct) ;
+//	double sp = std::sqrt(1-cp*cp) ;
+//	double st = std::sqrt(1-ct*ct) ;
 
-	CLHEP::Hep3Vector n(cp*st , sp*st , ct) ;
+    double cp = param[0] ;
+    double ct = param[1] ;
+
+    double sp = std::sqrt(1-cp*cp) ;
+    double st = std::sqrt(1-ct*ct) ;
+
+    CLHEP::Hep3Vector n(cp*st , sp*st , ct) ;
 
 	double sum = 0 ;
 

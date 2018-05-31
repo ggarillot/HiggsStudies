@@ -21,6 +21,8 @@
 
 #include "Minimisation.h"
 
+#include "EventShape.h"
+
 using namespace lcio ;
 using namespace marlin ;
 
@@ -108,6 +110,9 @@ void HiggsProcessor::init()
 
 	tree->Branch("nJets" , &nJets) ;
 	tree->Branch("nIsoLep" , &nIsoLep) ;
+
+	tree->Branch("sphericity" , &sphericity) ;
+	tree->Branch("cosThrust" , &cosThrust) ;
 
 	tree->Branch("y23" , &y23) ;
 	tree->Branch("y34" , &y34) ;
@@ -580,36 +585,43 @@ double HiggsProcessor::computeSphericity( const std::vector<fastjet::PseudoJet>&
 	auto eigenVal = tensor.eigenvalues() ;
 
 	std::array<double,3> val = {{ std::norm(eigenVal(0)) , std::norm(eigenVal(1)) , std::norm(eigenVal(2)) }} ;
-	std::sort(val.begin() , val.end()) ;
+	std::sort( val.begin() , val.end() ) ;
 
-	return 1.5*(val[1]+val[2]) ;
+	//    std::cout << val[0] << " " << val[1] << " " << val[2] << std::endl ;
+
+	return 1.5*(val[0]+val[1]) ;
 }
 
 CLHEP::Hep3Vector HiggsProcessor::computeThrustAxis( const std::vector<fastjet::PseudoJet>& particleVec )
 {
-	ThrustAxisComputer minim(particleVec) ;
-	minim.minimize() ;
+//	ThrustAxisComputer minim(particleVec) ;
+//	minim.minimize() ;
 
-	auto params = minim.getParams() ;
+//	auto params = minim.getParams() ;
 
-	CLHEP::Hep3Vector vec( std::cos(params[0])*std::sin(params[1]) , std::sin(params[0])*std::sin(params[1]) , std::cos(params[1])) ;
-	return vec ;
+//	CLHEP::Hep3Vector vec( std::cos(params[0])*std::sin(params[1]) , std::sin(params[0])*std::sin(params[1]) , std::cos(params[1])) ;
+//	return vec ;
+
+	EventShape shape ;
+	shape.setPartList(particleVec) ;
+
+	return CLHEP::Hep3Vector( shape.thrustAxis()(0) , shape.thrustAxis()(1) , shape.thrustAxis()(2) ) ;
 }
 
 std::array<double,2> HiggsProcessor::computeThrust( const std::vector<fastjet::PseudoJet>& particleVec )
 {
-	auto vec = computeThrustAxis( particleVec ) ;
+//    auto vec = computeThrustAxis( particleVec ) ;
 
-	double num = 0 ;
-	double denom = 0 ;
+//    double num = 0 ;
+//    double denom = 0 ;
 
-	for ( const auto& particle : particleVec )
-	{
-		denom += particle.modp() ;
-		num += std::abs( particle.px()*vec.x() + particle.py()*vec.y() + particle.pz()*vec.z()) ;
-	}
+//    for ( const auto& particle : particleVec )
+//    {
+//        denom += particle.modp() ;
+//        num += std::abs( particle.px()*vec.x() + particle.py()*vec.y() + particle.pz()*vec.z()) ;
+//    }
 
-	double tMaj = num/denom ;
+//    double tMaj = num/denom ;
 }
 
 
@@ -825,6 +837,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		recoParticles.push_back( recoPart ) ;
 	}
 
+	sphericity = computeSphericity(particles) ;
+	cosThrust = computeThrustAxis(particles).cosTheta() ;
 
 	totalEnergy = 0 ;
 	double totalZEnergy = 0.0 ;
