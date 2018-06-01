@@ -11,26 +11,6 @@
 
 unsigned int EventShape::m_maxpart = 1000 ;
 
-int EventShape::nInt(double x)
-{
-	// Round to nearest integer. Rounds half integers to the nearest even integer.
-
-	int i ;
-	if (x >= 0)
-	{
-		i = int(x + 0.5) ;
-		if (x + 0.5 == double(i) && i & 1)
-			i-- ;
-	}
-	else
-	{
-		i = int(x - 0.5) ;
-		if (x - 0.5 == double(i) && i & 1)
-			i++ ;
-	}
-	return i ;
-}
-
 void EventShape::setPartList(const std::vector<fastjet::PseudoJet>& particles)
 {	
 	//To make this look like normal physics notation the
@@ -85,7 +65,7 @@ void EventShape::setPartList(const std::vector<fastjet::PseudoJet>& particles)
 
 	// for pass = 1: find thrust axis.
 	// for pass = 2: find major axis.
-	for ( int pass = 1 ; pass < 3 ; pass++ )
+	for ( unsigned int pass = 1 ; pass < 3 ; pass++ )
 	{
 		if ( pass == 2 )
 		{
@@ -177,7 +157,7 @@ void EventShape::setPartList(const std::vector<fastjet::PseudoJet>& particles)
 				if (iPow(2,(i+1))*((n+iPow(2,i))/iPow(2,(i+1))) >= i+1)
 					sgn = -sgn;
 
-				for ( int j = 1; j < 5-pass; j++ )
+				for ( unsigned int j = 1; j < 5-pass; j++ )
 					tdi[j] = tdi[j] + sgn*fast(i,j);
 
 			}
@@ -233,7 +213,7 @@ void EventShape::setPartList(const std::vector<fastjet::PseudoJet>& particles)
 				for ( int i = 0; i < np; i++ )
 				{
 					sgn = sign(mom(i,5), tdi[1]*mom(i,1) + tdi[2]*mom(i,2) + tdi[3]*mom(i,3)) ;
-					for ( int j = 1; j < 5 - pass; j++ )
+					for ( unsigned int j = 1; j < 5 - pass; j++ )
 						tpr[j] = tpr[j] + sgn*mom(i,j);
 
 				}
@@ -249,7 +229,7 @@ void EventShape::setPartList(const std::vector<fastjet::PseudoJet>& particles)
 			if ( thp > m_dThrust[pass] + m_dConv )
 			{
 				nagree = 0;
-				sgn = iPow( -1 , int( nInt(distribution(generator)) ) ) ;
+				sgn = iPow( -1 , distribution(generator) ) ;
 				for ( int j = 1; j < 4; j++ )
 					m_dAxes(pass,j) = sgn*tpr[j]/(tmax*thp) ;
 
@@ -259,7 +239,7 @@ void EventShape::setPartList(const std::vector<fastjet::PseudoJet>& particles)
 		}
 	}
 	// Find minor axis and value by orthogonality.
-	sgn = iPow( -1, int( nInt(distribution(generator)) ) ) ;
+	sgn = iPow( -1, distribution(generator) ) ;
 	m_dAxes(3,1) = -sgn*m_dAxes(2,2);
 	m_dAxes(3,2) = sgn*m_dAxes(2,1);
 	m_dAxes(3,3) = 0.;
@@ -297,7 +277,7 @@ void EventShape::setThMomPower(double tp)
 		m_dDeltaThPower = tp - 1.0 ;
 }
 
-double EventShape::getThMomPower()
+double EventShape::getThMomPower() const
 {
 	return 1.0 + m_dDeltaThPower ;
 }
@@ -352,7 +332,7 @@ double EventShape::oblateness() const
 }
 
 // utilities(from Jetset):
-double EventShape::ulAngle(double x, double y)
+double EventShape::ulAngle(double x, double y) const
 {
 	constexpr double pi = 3.141592653589793 ;
 	double ulangl = 0 ;
@@ -375,7 +355,7 @@ double EventShape::ulAngle(double x, double y)
 	return ulangl ;
 }
 
-double EventShape::sign(double a, double b)
+double EventShape::sign(double a, double b) const
 {
 	if ( b < 0 )
 		return -std::abs(a) ;
@@ -391,7 +371,7 @@ void EventShape::ludbrb(Eigen::MatrixXd& mom , double theta , double phi , doubl
 	double pr[4] ;
 	double dp[5] ;
 
-	int np = mom.rows() ;
+	auto np = mom.rows() ;
 	if ( theta*theta + phi*phi > 1e-20 )
 	{
 		double ct = std::cos(theta) ;
@@ -409,9 +389,9 @@ void EventShape::ludbrb(Eigen::MatrixXd& mom , double theta , double phi , doubl
 		rot(3,2) = 0.0 ;
 		rot(3,3) = ct ;
 
-		for ( int i = 0; i < np ; i++ )
+		for ( unsigned int i = 0 ; i < np ; i++ )
 		{
-			for ( int j = 1; j < 4 ; j++ )
+			for ( int j = 1 ; j < 4 ; j++ )
 			{
 				pr[j] = mom(i,j) ;
 				mom(i,j) = 0 ;
@@ -434,10 +414,10 @@ void EventShape::ludbrb(Eigen::MatrixXd& mom , double theta , double phi , doubl
 				beta = 0.99999999;
 			}
 			double gamma = 1.0/std::sqrt(1.0 - beta*beta);
-			for ( int i = 0; i < np; i++ )
+			for ( unsigned int i = 0; i < np; i++ )
 			{
-				for ( int j = 1; j < 5; j++ )
-					dp[j] = mom(i,j);
+				for ( int j = 1 ; j < 5 ; j++ )
+					dp[j] = mom(i,j) ;
 
 				double bp = bx*dp[1] + by*dp[2] + bz*dp[3];
 				double gbp = gamma*(gamma*bp/(1.0 + gamma) + dp[4]);

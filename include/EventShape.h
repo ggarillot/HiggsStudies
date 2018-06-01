@@ -16,7 +16,7 @@ class EventShape
 		void setPartList(const std::vector<fastjet::PseudoJet>& particles ) ;
 
 		void setThMomPower(double tp) ;
-		double getThMomPower() ;
+		double getThMomPower() const ;
 		void setFast(int nf) ;
 		int getFast() const ;
 
@@ -32,16 +32,12 @@ class EventShape
 		double oblateness() const ;
 
 	private:
-		static int nInt(double x) ;
 
-		double ulAngle(double x, double y) ;
-		double sign(double a, double b) ;
+		double ulAngle(double x, double y) const ;
+		double sign(double a, double b) const ;
 		void ludbrb(Eigen::MatrixXd& mom , double theta , double phi , double bx , double by , double bz) ;
 
 		int iPow(int man, int exp) ;
-
-		double m_dSphMomPower = 2 ;
-		// PARU(41): Power of momentum dependence in sphericity finder.
 
 		double m_dDeltaThPower = 0 ;
 		// PARU(42): Power of momentum dependence in thrust finder.
@@ -63,13 +59,12 @@ class EventShape
 
 
 		std::mt19937_64 generator = std::mt19937_64() ;
-		std::uniform_real_distribution<double> distribution = std::uniform_real_distribution<double>(0.0,1.0) ;
+		std::uniform_int_distribution<> distribution = std::uniform_int_distribution<>(0,1) ;
 
 		std::array<double,4> m_dThrust = {} ;
 		double m_dOblateness = 0 ;
 
 		static unsigned int m_maxpart ;
-
 } ;
 
 #endif
