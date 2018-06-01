@@ -111,6 +111,8 @@ void HiggsProcessor::init()
 
 	tree->Branch("sphericity" , &sphericity) ;
 	tree->Branch("cosThrust" , &cosThrust) ;
+	tree->Branch("majorThrust" , &majorThrust) ;
+	tree->Branch("minorThrust" , &minorThrust) ;
 
 	tree->Branch("y23" , &y23) ;
 	tree->Branch("y34" , &y34) ;
@@ -590,28 +592,12 @@ double HiggsProcessor::computeSphericity( const std::vector<fastjet::PseudoJet>&
 	return 1.5*(val[0]+val[1]) ;
 }
 
-CLHEP::Hep3Vector HiggsProcessor::computeThrustAxis( const std::vector<fastjet::PseudoJet>& particleVec )
+std::array<double,3> HiggsProcessor::computeThrust( const std::vector<fastjet::PseudoJet>& particleVec )
 {
 	EventShape shape ;
 	shape.setPartList(particleVec) ;
 
-	return shape.thrustAxis() ;
-}
-
-std::array<double,2> HiggsProcessor::computeThrust( const std::vector<fastjet::PseudoJet>& particleVec )
-{
-//    auto vec = computeThrustAxis( particleVec ) ;
-
-//    double num = 0 ;
-//    double denom = 0 ;
-
-//    for ( const auto& particle : particleVec )
-//    {
-//        denom += particle.modp() ;
-//        num += std::abs( particle.px()*vec.x() + particle.py()*vec.y() + particle.pz()*vec.z()) ;
-//    }
-
-//    double tMaj = num/denom ;
+	return {{ std::abs( shape.thrustAxis().cosTheta() ) , shape.majorThrust() , shape.minorThrust() }} ;
 }
 
 
@@ -828,13 +814,14 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	}
 
 	sphericity = computeSphericity(particles) ;
-	cosThrust = computeThrustAxis(particles).cosTheta() ;
+
+	auto thrust = computeThrust(particles) ;
+	cosThrust = thrust[0] ;
+	majorThrust = thrust[1] ;
+	minorThrust = thrust[2] ;
 
 	totalEnergy = 0 ;
 	double totalZEnergy = 0.0 ;
-
-	//	double totalPx = 0 ;
-	//	double totalPy = 0 ;
 
 	pMiss = {0,0,0} ;
 
@@ -845,9 +832,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		pMiss[0] += particle.px() ;
 		pMiss[1] += particle.py() ;
 		pMiss[2] += particle.pz() ;
-
-		//		totalPx += particle.px() ;
-		//		totalPy += particle.py() ;
 
 		if ( std::abs( particle.user_info<ParticleInfo>().origin() ) <= 6 )
 		{
@@ -864,8 +848,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	CLHEP::Hep3Vector pMissVec(pMiss[0],  pMiss[1] , pMiss[2]) ;
 	cosThetaMiss = pMissVec.cosTheta() ;
 
-	//temp
-	//	totalPt = std::sqrt(totalPx*totalPx + totalPy*totalPy) ;
 
 	pMissNorm = 0 ;
 	for ( const auto& i : pMiss )
