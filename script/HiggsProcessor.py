@@ -56,33 +56,3 @@ def launch(a , files) :
 
 	os.system('Marlin ' + xmlFileName)
 	os.system('rm ' + xmlFileName)
-
-
-
-if __name__ == '__main__' :
-
-	processID = '106485'
-	yCut = 0.003
-	os.environ["MARLIN_DLL"] = '/home/guillaume/HiggsStudies/lib/libHiggsStudies.so'
-
-	#dir = '/home/garillot/files/ILD/dst/qqh'
-	#dir = '/home/garillot/files/ILD/new/Reconstructed/106485'
-	dir = '/home/guillaume/files/ILD/v02-00/Reconstructed/' + processID
-
-	print ('Searching files in ' + dir)
-
-	#list files
-	fileList = []
-
-	for fileName in os.listdir(dir) :
-		if processID + '.' in fileName :
-			fileList.append(dir + '/' + fileName)
-
-	a = Params()
-	a.processID = processID
-	a.yCut = yCut
-	a.outputFileName = 'test' + processID + '.root'
-
-	launch(a,fileList)
-
-
