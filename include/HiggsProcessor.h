@@ -155,7 +155,6 @@ class HiggsProcessor : public Processor
 		double zMass = 0 ;
 		double recMass = 0 ;
 		double recMass2 = 0 ;
-		double recMassInv = 0 ;
 
 		double cosThetaZ = 0 ;
 

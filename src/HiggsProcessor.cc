@@ -120,7 +120,6 @@ void HiggsProcessor::init()
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
 	tree->Branch("recMass2" , &recMass2) ;
-	tree->Branch("recMassInv" , &recMassInv) ;
 
 	tree->Branch("cosThetaZ" , &cosThetaZ) ;
 
@@ -855,47 +854,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	pMissNorm = std::sqrt(pMissNorm) ;
 
-	/*
-	//compute perfect Z and H jets
-	assert(zParticles.size() > 1) ;
 
-	//jets of Z using only Z particles -> (theorically perfect Z jets)
-	fastjet::JetDefinition jDZideal(fastjet::ee_kt_algorithm) ;
-	fastjet::ClusterSequence csZideal(zParticles , jDZideal) ;
-	auto jetsZ = sorted_by_pt( csZideal.exclusive_jets(2) ) ;
-
-	//jets of H using only H particles -> (theorically perfect H jets)
-	int targetNJetsHideal = std::min(static_cast<int>(hParticles.size()) , 2 ) ;
-
-	fastjet::JetDefinition jDHideal(fastjet::ee_kt_algorithm) ;
-	fastjet::ClusterSequence csHideal(hParticles , jDHideal) ;
-	auto jetsH = sorted_by_pt( csHideal.exclusive_jets(targetNJetsHideal) ) ;
-
-	auto idealZDiJet = DiJet( jetsZ.at(0) , jetsZ.at(1) ) ;
-
-	//invisible higgs
-	fastjet::JetDefinition jDinv(fastjet::ee_kt_algorithm) ;
-	fastjet::ClusterSequence csInv(zParticles , jDZideal) ;
-	auto jetsHinv = sorted_by_pt( csInv.exclusive_jets(2) ) ;
-	auto invDiJet = DiJet( jetsHinv.at(0) , jetsHinv.at(1) ) ;
-
-	cosThetaZIdeal = idealZDiJet.diJet().pz() / idealZDiJet.diJet().modp() ;
-
-	cosThetaBetwZDiJetIdeal = idealZDiJet.getCosAngleBetweenJets() ;
-	if ( jetsH.size() > 1 )
-	{
-		auto idealHDiJet = DiJet( jetsH.at(0) , jetsH.at(1) ) ;
-		cosThetaBetwHDiJetIdeal = idealHDiJet.getCosAngleBetweenJets() ;
-	}
-	else
-		cosThetaBetwHDiJetIdeal = 1.0 ;
-
-
-	zMassIdeal = idealZDiJet.diJet().m() ;
-
-	double idealpZ = idealZDiJet.diJet().pt()*idealZDiJet.diJet().pt() + idealZDiJet.diJet().pz()*idealZDiJet.diJet().pz() ;
-	recMassIdeal = std::sqrt( (sqrtS - idealZDiJet.diJet().e() )*(sqrtS - idealZDiJet.diJet().e() ) - idealpZ ) ;
-*/
 	auto decay = findDecayMode( evt->getCollection(mcPartColName) ) ;
 	decayID = decay.first ;
 	subDecayID = decay.second ;
