@@ -203,4 +203,6 @@ void EventReader::setTreeWrite(TTree* _tree)
 	_tree->Branch("BDT" , &BDT) ;
 	_tree->Branch("weight" , &weight) ;
 	_tree->Branch("deltaE" , &deltaE) ;
+
+	_tree->Branch("category" , &category) ;
 }

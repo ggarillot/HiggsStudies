@@ -134,6 +134,8 @@ class EventReader
 		float BDT = 0 ;
 		float weight = 0 ;
 		float deltaE = 0 ;
+
+		int category = 0 ;
 } ;
 
 
