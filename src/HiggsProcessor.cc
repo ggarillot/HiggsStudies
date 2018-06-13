@@ -119,7 +119,9 @@ void HiggsProcessor::init()
 
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
-	tree->Branch("recMass2" , &recMass2) ;
+
+	tree->Branch("zMassVec" , &zMassVec) ;
+	tree->Branch("recMassVec" , &recMassVec) ;
 
 	tree->Branch("cosThetaZ" , &cosThetaZ) ;
 
@@ -178,6 +180,100 @@ void HiggsProcessor::init()
 
 	tree->Branch("neutrinoEnergy" , &neutrinoEnergy) ;
 	tree->Branch("ISREnergy" , &ISREnergy) ;
+}
+
+void HiggsProcessor::cleanEvent()
+{
+	recoParticles.clear() ;
+
+	particles.clear() ;
+	zParticles.clear() ;
+	hParticles.clear() ;
+	allExceptHParticles.clear() ;
+
+	for ( auto& it : fixedJets )
+		it.clear() ;
+
+	originMap.clear() ;
+
+	goodEvent = true ;
+	onlyNegative = false ;
+
+	nJets = 0 ;
+	nIsoLep = 0 ;
+
+	sphericity = 0 ;
+	cosThrust = 0 ;
+	majorThrust = 0 ;
+	minorThrust = 0 ;
+
+	y23 = 0 ;
+	y34 = 0 ;
+
+	zMass = 0 ;
+	recMass = 0 ;
+
+	zMassVec.clear() ;
+	recMassVec.clear() ;
+
+	cosThetaZ = 0 ;
+
+	cosThetaZ12 = 0 ;
+	cosThetaH12 = 0 ;
+
+	z1e = 0 ;
+	z2e = 0 ;
+	h1e = 0 ;
+	h2e = 0 ;
+
+	zPt = 0 ;
+
+	pz = 0 ;
+
+	mass2Jet = 0 ;
+	cosBetw2Jet = 0 ;
+	ww12mass = 0 ;
+	ww34mass = 0 ;
+	zz12mass = 0 ;
+	zz34mass = 0 ;
+
+	wwMass3 = 0 ;
+	wwRecMass3 = 0 ;
+
+	w12pt = 0 ;
+	z12pt = 0 ;
+	w3pt = 0 ;
+
+	totalEnergy = 0 ;
+	totalEnergyJets = 0 ;
+
+	pMiss.clear() ;
+	pMissNorm = 0 ;
+	cosThetaMiss = 0 ;
+
+	decayID = 0 ;
+	subDecayID = 0 ;
+
+	zPurity = 0 ;
+	zTagged = 0 ;
+
+	zMassIdeal = 0 ;
+	recMassIdeal = 0 ;
+
+	cosThetaZIdeal = 0 ;
+
+	cosThetaBetwZDiJetIdeal = 0 ;
+	cosThetaBetwHDiJetIdeal = 0 ;
+
+	neutrinoEnergy = 0 ;
+	ISREnergy = 0 ;
+
+	zMassMC = 0 ;
+	recMassMC = 0 ;
+
+	zPurityJets.clear() ;
+
+	yValueVec.clear() ;
 }
 
 std::pair<int,int> HiggsProcessor::findDecayModeSignal(LCCollection* _mcCol)
@@ -754,6 +850,7 @@ std::pair<DiJet,DiJet> HiggsProcessor::choosePairOfWDiJets(const std::vector<fas
 
 void HiggsProcessor::processEvent(LCEvent* evt)
 {
+	cleanEvent() ;
 	currentEvt = evt ;
 
 	runNumber = evt->getRunNumber() ;
@@ -766,12 +863,8 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	computeOriginMap() ;
 
 	neutrinoEnergy = totalNeutrinoEnergy() ;
-	particles.clear() ;
-	zParticles.clear() ;
-	hParticles.clear() ;
-	allExceptHParticles.clear() ;
-
-	recoParticles.clear() ;
+	zMassVec = std::vector<double>(7 , -1.0) ;
+	recMassVec = std::vector<double>(7 , -1.0) ;
 
 	auto isoLepCol = currentEvt->getCollection( isoLepColName ) ;
 
@@ -917,6 +1010,38 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	cosBetw2Jet =  dijet2.jet1().pz() / dijet2.jet1().modp() ;
 
 
+	//nJets ZH clustering
+
+	for ( unsigned int i = 2 ; i <= 6 ; ++i )
+	{
+		std::vector<fastjet::PseudoJet> remainingJets ;
+
+		double& _zMass = zMassVec[i] ;
+		double& _recMass = recMassVec[i] ;
+		DiJet zDiJet ;
+		try
+		{
+			zDiJet = chooseZDiJet(fixedJets[i] , remainingJets) ;
+		}
+		catch( std::logic_error &e )
+		{
+			continue ;
+		}
+
+		_zMass = zDiJet.diJet().m() ;
+		double pZ = zDiJet.diJet().modp2() ;
+		//		pz = pZ ;
+		//		zPt = zDiJet.diJet().pt() ;
+
+		double recMassSq = (sqrtS - zDiJet.diJet().e() )*(sqrtS - zDiJet.diJet().e() ) - pZ ;
+
+		if ( recMassSq < 0 )
+			continue ;
+
+		_recMass = std::sqrt( recMassSq ) ;
+	}
+
+
 
 	//main ZH clustering
 	fastjet::JetDefinition jDZH(fastjet::ee_kt_algorithm) ;
@@ -994,10 +1119,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	recMass = std::sqrt( recMassSq ) ;
 
-	double a = (zMassRef*zMassRef)/zDiJet.diJet().m2() ;
-
-	a = std::min(a , sqrtS/(zDiJet.diJet().modp()+zDiJet.diJet().e())) ;
-	recMass2 = std::sqrt( (sqrtS - zDiJet.diJet().e()*std::sqrt(a) )*(sqrtS - zDiJet.diJet().e()*std::sqrt(a) ) - pZ*a ) ;
 
 	int targetNJetsH = std::min(static_cast<int>(remainingParticles.size()) , 2 ) ;
 

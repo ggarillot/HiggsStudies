@@ -83,6 +83,8 @@ class HiggsProcessor : public Processor
 		void operator=(const HiggsProcessor &toCopy) = delete ;
 
 	protected :
+		void cleanEvent() ;
+
 		DiJet chooseDiJet(const std::vector<fastjet::PseudoJet>& jets , const double& targetMass) ;
 		std::pair<DiJet,DiJet> choosePairDiJets(const std::vector<fastjet::PseudoJet>& jets , const double& targetMass) ;
 
@@ -154,7 +156,9 @@ class HiggsProcessor : public Processor
 
 		double zMass = 0 ;
 		double recMass = 0 ;
-		double recMass2 = 0 ;
+
+		std::vector<double> zMassVec = {} ;
+		std::vector<double> recMassVec = {} ;
 
 		double cosThetaZ = 0 ;
 
