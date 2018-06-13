@@ -144,6 +144,7 @@ class HiggsProcessor : public Processor
 		double sqrtS = 0 ;
 
 		unsigned int nJets = 0 ;
+		unsigned int nJets2 = 0 ;
 		unsigned int nIsoLep = 0 ;
 
         double sphericity = 0 ;
@@ -156,6 +157,9 @@ class HiggsProcessor : public Processor
 
 		double zMass = 0 ;
 		double recMass = 0 ;
+
+		double zMass2 = 0 ;
+		double recMass2 = 0 ;
 
 		std::vector<double> zMassVec = {} ;
 		std::vector<double> recMassVec = {} ;

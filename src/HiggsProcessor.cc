@@ -107,6 +107,7 @@ void HiggsProcessor::init()
 	tree->Branch("sqrtS" , &sqrtS) ;
 
 	tree->Branch("nJets" , &nJets) ;
+	tree->Branch("nJets2" , &nJets2) ;
 	tree->Branch("nIsoLep" , &nIsoLep) ;
 
 	tree->Branch("sphericity" , &sphericity) ;
@@ -119,6 +120,9 @@ void HiggsProcessor::init()
 
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
+
+	tree->Branch("zMass2" , &zMass2) ;
+	tree->Branch("recMass2" , &recMass2) ;
 
 	tree->Branch("zMassVec" , &zMassVec) ;
 	tree->Branch("recMassVec" , &recMassVec) ;
@@ -200,6 +204,7 @@ void HiggsProcessor::cleanEvent()
 	onlyNegative = false ;
 
 	nJets = 0 ;
+	nJets2 = 0 ;
 	nIsoLep = 0 ;
 
 	sphericity = 0 ;
@@ -212,6 +217,9 @@ void HiggsProcessor::cleanEvent()
 
 	zMass = 0 ;
 	recMass = 0 ;
+
+	zMass2 = 0 ;
+	recMass2 = 0 ;
 
 	zMassVec.clear() ;
 	recMassVec.clear() ;
@@ -1040,6 +1048,21 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 		_recMass = std::sqrt( recMassSq ) ;
 	}
+
+	double chi2 = std::numeric_limits<double>::max() ;
+	for ( unsigned int i = 2 ; i <= 6 ; ++i )
+	{
+		double temp = std::abs( zMassRef - zMassVec[i] ) ;
+
+		if ( temp < chi2 && recMassVec[i] > -1 )
+		{
+			zMass2 = zMassVec[i] ;
+			recMass2 = recMassVec[i] ;
+			nJets2 = i ;
+			chi2 = temp ;
+		}
+	}
+
 
 
 
