@@ -24,7 +24,6 @@ bool ZZ_h(const Event& event)
 
 bool WW_sl(const Event& event)
 {
-	return true ;
 	if ( !(event.wwMass3<85 && event.wwMass3>75) || !(event.wwRecMass3>60 && event.wwRecMass3<160) )
 		return true ;
 	else
