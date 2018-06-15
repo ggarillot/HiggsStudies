@@ -141,6 +141,8 @@ class HiggsProcessor : public Processor
 		bool goodEvent = true ;
 		bool onlyNegative = false ;
 
+		bool bigPhoton = false ;
+
 		double sqrtS = 0 ;
 
 		unsigned int nJets = 0 ;

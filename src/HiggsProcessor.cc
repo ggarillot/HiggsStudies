@@ -104,6 +104,8 @@ void HiggsProcessor::init()
 	tree->Branch("goodEvent" , &goodEvent) ;
 	tree->Branch("onlyNegative" , &onlyNegative) ;
 
+	tree->Branch("bigPhoton" , &bigPhoton) ;
+
 	tree->Branch("sqrtS" , &sqrtS) ;
 
 	tree->Branch("nJets" , &nJets) ;
@@ -202,6 +204,8 @@ void HiggsProcessor::cleanEvent()
 
 	goodEvent = true ;
 	onlyNegative = false ;
+
+	bigPhoton = false ;
 
 	nJets = 0 ;
 	nJets2 = 0 ;
@@ -891,6 +895,12 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		ReconstructedParticleImpl* recoPart = dynamic_cast<ReconstructedParticleImpl*>( recoCol->getElementAt(i) ) ;
 		partInfo->setRecoParticle( recoPart ) ;
 		partInfo->setId(i) ;
+
+		if ( recoPart->getType() == 22 )
+		{
+			if ( recoPart->getEnergy() > 30 )
+				bigPhoton = true ;
+		}
 
 		std::map<int,float> mcorig = mcOriginOfParticle( partInfo->recoParticle() ) ;
 
