@@ -25,11 +25,17 @@ struct Event
 		unsigned int nJets = 0 ;
 		unsigned int nIsoLep = 0 ;
 
+		double majorThrust = 0 ;
+		double minorThrust = 0 ;
+
 		double y23 = 0 ;
 		double y34 = 0 ;
 
 		double zMass = 0 ;
 		double recMass = 0 ;
+
+		std::vector<double> zMassVec = {} ;
+		std::vector<double> recMassVec = {} ;
 
 		double cosThetaZ = 0 ;
 		double cosThetaZ12 = 0 ;
@@ -92,11 +98,17 @@ class EventReader
 		unsigned int nJets = 0 ;
 		unsigned int nIsoLep = 0 ;
 
+		double majorThrust = 0 ;
+		double minorThrust = 0 ;
+
 		double y23 = 0 ;
 		double y34 = 0 ;
 
 		double zMass = 0 ;
 		double recMass = 0 ;
+
+		std::vector<double>* zMassVec = nullptr ;
+		std::vector<double>* recMassVec = nullptr ;
 
 		double cosThetaZ = 0 ;
 		double cosThetaZ12 = 0 ;

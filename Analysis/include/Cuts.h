@@ -6,6 +6,22 @@
 namespace Cut
 {
 
+bool isInvis(const Event& event)
+{
+	if ( event.mass2Jet < 120 && event.nJets < 4 && event.nIsoLep == 0 )
+		return true ;
+	else
+		return false ;
+}
+
+bool rangeInvis(const Event& event)
+{
+	if ( (event.zMassVec[2] > 70 && event.zMassVec[2] < 110) && (event.recMassVec[2] > 100 && event.recMassVec[2] < 160)  )
+		return true ;
+	else
+		return false ;
+}
+
 bool WW_h(const Event& event)
 {
 	if ( (event.ww12mass-80)*(event.ww12mass-80) + (event.ww34mass-80)*(event.ww34mass-80) > 100 )
@@ -32,7 +48,15 @@ bool WW_sl(const Event& event)
 
 bool range(const Event& event)
 {
-	if ( (event.zMass > 70 && event.zMass < 110) && (event.recMass > 100 && event.recMass < 200)  )
+	if ( (event.zMass > 70 && event.zMass < 110) && (event.recMass > 100 && event.recMass < 160)  )
+		return true ;
+	else
+		return false ;
+}
+
+bool rangeLep(const Event& event)
+{
+	if ( (event.zMass > 60 && event.zMass < 110) && (event.recMass > 100 && event.recMass < 160)  )
 		return true ;
 	else
 		return false ;
@@ -41,6 +65,14 @@ bool range(const Event& event)
 bool angle(const Event& event)
 {
 	if ( event.zPt > 20 && std::abs(event.cosThetaMiss) < 0.9 )
+		return true ;
+	else
+		return false ;
+}
+
+bool thrust(const Event& event)
+{
+	if ( event.minorThrust > 0.12 || event.majorThrust>0.35 )
 		return true ;
 	else
 		return false ;

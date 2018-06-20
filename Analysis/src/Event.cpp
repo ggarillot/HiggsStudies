@@ -19,11 +19,17 @@ Event EventReader::getEvent(Long64_t entry)
 	event.nJets = nJets ;
 	event.nIsoLep = nIsoLep ;
 
+	event.majorThrust = majorThrust ;
+	event.minorThrust = minorThrust ;
+
 	event.y23 = y23 ;
 	event.y34 = y34 ;
 
 	event.zMass = zMass ;
 	event.recMass = recMass ;
+
+	event.zMassVec = std::vector<double>(*zMassVec) ;
+	event.recMassVec = std::vector<double>(*recMassVec) ;
 
 	event.cosThetaZ = cosThetaZ ;
 	event.cosThetaZ12 = cosThetaZ12 ;
@@ -68,11 +74,17 @@ void EventReader::loadEvent(Event event)
 	nJets = event.nJets ;
 	nIsoLep = event.nIsoLep ;
 
+	majorThrust = event.majorThrust ;
+	minorThrust = event.minorThrust ;
+
 	y23 = event.y23 ;
 	y34 = event.y34 ;
 
 	zMass = event.zMass ;
 	recMass = event.recMass ;
+
+	zMassVec = &event.zMassVec ;
+	recMassVec = &event.recMassVec ;
 
 	cosThetaZ = event.cosThetaZ ;
 	cosThetaZ12 = event.cosThetaZ12 ;
@@ -115,11 +127,21 @@ void EventReader::setTree(TTree* _tree)
 	tree->SetBranchAddress("nJets" , &nJets) ;
 	tree->SetBranchAddress("nIsoLep" , &nIsoLep) ;
 
+	tree->SetBranchAddress("majorThrust" , &majorThrust) ;
+	tree->SetBranchAddress("minorThrust" , &minorThrust) ;
+
+
+
 	tree->SetBranchAddress("y23" , &y23) ;
 	tree->SetBranchAddress("y34" , &y34) ;
 
 	tree->SetBranchAddress("zMass" , &zMass) ;
 	tree->SetBranchAddress("recMass" , &recMass) ;
+
+
+	tree->SetBranchAddress("zMassVec" , &zMassVec) ;
+	tree->SetBranchAddress("recMassVec" , &recMassVec) ;
+
 
 	tree->SetBranchAddress("cosThetaZ" , &cosThetaZ) ;
 	tree->SetBranchAddress("cosThetaZ12" , &cosThetaZ12) ;
@@ -163,11 +185,17 @@ void EventReader::setTreeWrite(TTree* _tree)
 	_tree->Branch("nJets" , &nJets) ;
 	_tree->Branch("nIsoLep" , &nIsoLep) ;
 
+	_tree->Branch("majorThrust" , &majorThrust) ;
+	_tree->Branch("minorThrust" , &minorThrust) ;
+
 	_tree->Branch("y23" , &y23) ;
 	_tree->Branch("y34" , &y34) ;
 
 	_tree->Branch("zMass" , &zMass) ;
 	_tree->Branch("recMass" , &recMass) ;
+
+	_tree->Branch("zMassVec" , &zMassVec) ;
+	_tree->Branch("recMassVec" , &recMassVec) ;
 
 	_tree->Branch("cosThetaZ" , &cosThetaZ) ;
 	_tree->Branch("cosThetaZ12" , &cosThetaZ12) ;

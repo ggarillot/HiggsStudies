@@ -104,7 +104,6 @@ class HiggsProcessor : public Processor
 		std::string mcPartColName = "" ;
 		std::string recoPartColName = "" ;
 		std::string isoLepColName = "" ;
-		std::string noIsoLepColName = "" ;
 
 		std::string linkColName = "" ;
 
@@ -138,15 +137,13 @@ class HiggsProcessor : public Processor
 		int runNumber = 0 ;
 		int evtNumber = 0 ;
 
-		bool goodEvent = true ;
-		bool onlyNegative = false ;
+		int failedStep = 0 ;
 
 		bool bigPhoton = false ;
 
 		double sqrtS = 0 ;
 
 		unsigned int nJets = 0 ;
-		unsigned int nJets2 = 0 ;
 		unsigned int nIsoLep = 0 ;
 
         double sphericity = 0 ;
@@ -159,9 +156,6 @@ class HiggsProcessor : public Processor
 
 		double zMass = 0 ;
 		double recMass = 0 ;
-
-		double zMass2 = 0 ;
-		double recMass2 = 0 ;
 
 		std::vector<double> zMassVec = {} ;
 		std::vector<double> recMassVec = {} ;
@@ -229,14 +223,6 @@ class HiggsProcessor : public Processor
 		double zMassMC = 0 ;
 		double recMassMC = 0 ;
 
-
-
-
-
-		std::vector<double> zPurityJets {} ;
-
-
-		std::vector<double> yValueVec ;
 
 	private :
 
