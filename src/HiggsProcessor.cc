@@ -795,7 +795,8 @@ std::pair<DiJet,DiJet> HiggsProcessor::choosePairDiJets(const std::vector<fastje
 	if ( jets.size() != 4 )
 		throw std::logic_error("Error in HiggsProcessor::choosePairDiJets : not 4 jets") ;
 
-	std::vector<unsigned int> okJets = {} ;
+	std::vector<unsigned int> okJets = {0,1,2,3} ;
+	/*
 	std::vector<unsigned int> notOkJets = {} ;
 
 	for ( unsigned int i = 0 ; i < 4 ; ++i )
@@ -819,7 +820,7 @@ std::pair<DiJet,DiJet> HiggsProcessor::choosePairDiJets(const std::vector<fastje
 
 	if ( okJets.size() < 2 )
 		throw std::logic_error("Error in HiggsProcessor::choosePairDiJets : fewer than 2 ok jets") ;
-
+	*/
 	double chi2 = std::numeric_limits<double>::max() ;
 
 	std::vector<unsigned int> goodPair = {} ;
@@ -1137,7 +1138,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	assert ( jets.size() > 1 ) ;
 
 	totalEnergyJets = 0.0 ;
-
 	for ( const auto& jet : jets )
 		totalEnergyJets += jet.e() ;
 
