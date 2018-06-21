@@ -157,8 +157,13 @@ class HiggsProcessor : public Processor
 		double zMass = 0 ;
 		double recMass = 0 ;
 
+		std::vector<bool> validVec = {} ;
 		std::vector<double> zMassVec = {} ;
 		std::vector<double> recMassVec = {} ;
+
+		std::vector<double> cosThetaZVec = {} ;
+		std::vector<double> zPtVec = {} ;
+
 
 		double cosThetaZ = 0 ;
 
@@ -171,8 +176,6 @@ class HiggsProcessor : public Processor
 		double h2e = 0 ;
 
 		double zPt = 0 ;
-
-		double pz = 0 ;
 
 		double mass2Jet = 0 ;
 		double cosBetw2Jet = 0 ;

@@ -114,8 +114,11 @@ void HiggsProcessor::init()
 	tree->Branch("zMass" , &zMass) ;
 	tree->Branch("recMass" , &recMass) ;
 
+	tree->Branch("validVec" , &validVec) ;
 	tree->Branch("zMassVec" , &zMassVec) ;
 	tree->Branch("recMassVec" , &recMassVec) ;
+	tree->Branch("cosThetaZVec" , &cosThetaZVec) ;
+	tree->Branch("zPtVec" , &zPtVec) ;
 
 	tree->Branch("cosThetaZ" , &cosThetaZ) ;
 
@@ -129,9 +132,6 @@ void HiggsProcessor::init()
 	tree->Branch("h2e" , &h2e) ;
 
 	tree->Branch("zPt" , &zPt) ;
-
-	tree->Branch("pz" , &pz) ;
-
 
 	tree->Branch("mass2Jet" , &mass2Jet) ;
 	tree->Branch("cosBetw2Jet" , &cosBetw2Jet) ;
@@ -208,8 +208,11 @@ void HiggsProcessor::cleanEvent()
 	zMass = 0 ;
 	recMass = 0 ;
 
+	validVec.clear() ;
 	zMassVec.clear() ;
 	recMassVec.clear() ;
+	cosThetaZVec.clear() ;
+	zPtVec.clear() ;
 
 	cosThetaZ = 0 ;
 
@@ -222,8 +225,6 @@ void HiggsProcessor::cleanEvent()
 	h2e = 0 ;
 
 	zPt = 0 ;
-
-	pz = 0 ;
 
 	mass2Jet = 0 ;
 	cosBetw2Jet = 0 ;
@@ -904,8 +905,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 	computeOriginMap() ;
 
 	neutrinoEnergy = totalNeutrinoEnergy() ;
-	zMassVec = std::vector<double>(7 , -1.0) ;
-	recMassVec = std::vector<double>(7 , -1.0) ;
 
 	auto isoLepCol = currentEvt->getCollection( isoLepColName ) ;
 
@@ -1070,6 +1069,11 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 
 	//nJets ZH clustering
+	validVec = std::vector<bool>(7 , true) ;
+	zMassVec = std::vector<double>(7 , -1.0) ;
+	recMassVec = std::vector<double>(7 , -1.0) ;
+	cosThetaZVec = std::vector<double>(7 , 0) ;
+	zPtVec = std::vector<double>(7 , 0) ;
 
 	for ( unsigned int i = 2 ; i <= 6 ; ++i )
 	{
@@ -1084,6 +1088,7 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		}
 		catch( std::logic_error &e )
 		{
+			validVec[i] = false ;
 			continue ;
 		}
 
@@ -1092,10 +1097,17 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 		double recMassSq = (sqrtS - zDiJet.diJet().e() )*(sqrtS - zDiJet.diJet().e() ) - pZ ;
 
 		if ( recMassSq < 0 )
+		{
+			validVec[i] = false ;
 			continue ;
+		}
 
 		_recMass = std::sqrt( recMassSq ) ;
+		zPtVec[i] = zDiJet.diJet().pt() ;
+		cosThetaZVec[i] = zDiJet.diJet().pz() / zDiJet.diJet().modp() ;
 	}
+
+
 
 
 	//main ZH clustering
@@ -1159,7 +1171,6 @@ void HiggsProcessor::processEvent(LCEvent* evt)
 
 	zMass = zDiJet.diJet().m() ;
 	double pZ = zDiJet.diJet().modp2() ;
-	pz = pZ ;
 
 	zPt = zDiJet.diJet().pt() ;
 
