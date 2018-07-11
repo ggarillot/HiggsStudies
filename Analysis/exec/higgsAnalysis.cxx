@@ -389,7 +389,7 @@ int main(int argc , char** argv)
 				nEventsDecayMap[event.decayID*10+event.subDecayID][0] += eventReader.weight ;
 		}
 
-		if ( !event.goodEvent )
+		if ( event.failedStep != 0 )
 			continue ;
 
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
@@ -424,16 +424,16 @@ int main(int argc , char** argv)
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
 			nEventsDecayMap[event.decayID][3] += eventReader.weight ;
 
-		if ( !Cut::range(event) )
-			continue ;
+//		if ( !Cut::range(event) )
+//			continue ;
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
 			nEventsDecayMap[event.decayID][4] += eventReader.weight ;
 
-		if ( !Cut::mass2Jet(event) )
-			continue ;
+//		if ( !Cut::mass2Jet(event) )
+//			continue ;
 
-		if ( !Cut::angle(event) )
-			continue ;
+//		if ( !Cut::angle(event) )
+//			continue ;
 		if ( eventReader.processID == 106485 || eventReader.processID == 106486 )
 		{
 			nEventsDecayMap[event.decayID][5] += eventReader.weight ;

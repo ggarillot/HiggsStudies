@@ -4,26 +4,26 @@
 std::string Process::getProcess(const Event& event)
 {
 	if ( event.processID == 106485 || event.processID == 106486 )
-		return "ZH" ;
+		return std::string("ZH") ;
 	else if ( event.processID == 106551 || event.processID == 106552 )
-		return "qqqq" ;
+		return std::string("qqqq") ;
 	else if ( event.processID == 106577 || event.processID == 106578 || event.processID == 106564 || event.processID == 106566 || event.processID == 106563 || event.processID == 106565 )
-		return "qqlv" ;
+		return std::string("qqlv") ;
 	else if ( event.processID == 106573 || event.processID == 106574 )
-		return "qqqq" ;
+		return std::string("qqqq") ;
 	else if ( event.processID == 106607 || event.processID == 106608 )
-		return "qq" ;
+		return std::string("qq") ;
 	else if ( event.processID == 106575 || event.processID == 106576 )
 	{
 		if ( event.decayID%2 == 0 )
-			return "qqvv" ;
+			return std::string("qqvv") ;
 		else
-			return "qqll" ;
+			return std::string("qqll") ;
 	}
 	else if ( event.processID == 106560 || event.processID == 106562 || event.processID == 106559 || event.processID == 106561 )
-		return "qqll" ;
+		return std::string("qqll") ;
 	else if ( event.processID == 106571 || event.processID == 106572 )
-		return "qqvv" ;
+		return std::string("qqvv") ;
 	else
 	{
 		std::cout << "Process::Error in getProcess : processID = " << event.processID << std::endl ;

@@ -160,7 +160,6 @@ class HiggsProcessor : public Processor
 		std::vector<bool> validVec = {} ;
 		std::vector<double> zMassVec = {} ;
 		std::vector<double> recMassVec = {} ;
-
 		std::vector<double> cosThetaZVec = {} ;
 		std::vector<double> zPtVec = {} ;
 

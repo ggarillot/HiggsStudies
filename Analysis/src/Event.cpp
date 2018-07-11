@@ -13,7 +13,7 @@ Event EventReader::getEvent(Long64_t entry)
 
 	event.processID = processID ;
 
-	event.goodEvent = goodEvent ;
+	event.failedStep = failedStep ;
 	event.sqrtS = sqrtS ;
 
 	event.nJets = nJets ;
@@ -28,8 +28,11 @@ Event EventReader::getEvent(Long64_t entry)
 	event.zMass = zMass ;
 	event.recMass = recMass ;
 
+	event.validVec = std::vector<bool>(*validVec) ;
 	event.zMassVec = std::vector<double>(*zMassVec) ;
 	event.recMassVec = std::vector<double>(*recMassVec) ;
+	event.cosThetaZVec = std::vector<double>(*cosThetaZVec) ;
+	event.zPtVec = std::vector<double>(*zPtVec) ;
 
 	event.cosThetaZ = cosThetaZ ;
 	event.cosThetaZ12 = cosThetaZ12 ;
@@ -53,6 +56,7 @@ Event EventReader::getEvent(Long64_t entry)
 	event.z12pt = z12pt ;
 	event.w3pt = w3pt ;
 
+	event.pMiss = std::vector<double>(*pMiss) ;
 	event.cosThetaMiss = cosThetaMiss ;
 	event.totalEnergy = totalEnergy ;
 
@@ -67,7 +71,7 @@ void EventReader::loadEvent(Event event)
 {
 	processID = event.processID ;
 
-	goodEvent = event.goodEvent ;
+	failedStep = event.failedStep ;
 
 	sqrtS = event.sqrtS ;
 
@@ -83,8 +87,11 @@ void EventReader::loadEvent(Event event)
 	zMass = event.zMass ;
 	recMass = event.recMass ;
 
+	validVec = &event.validVec ;
 	zMassVec = &event.zMassVec ;
 	recMassVec = &event.recMassVec ;
+	cosThetaZVec = &event.cosThetaZVec ;
+	zPtVec = &event.zPtVec ;
 
 	cosThetaZ = event.cosThetaZ ;
 	cosThetaZ12 = event.cosThetaZ12 ;
@@ -108,6 +115,7 @@ void EventReader::loadEvent(Event event)
 	z12pt = event.z12pt ;
 	w3pt = event.w3pt ;
 
+	pMiss = &event.pMiss ;
 	cosThetaMiss = event.cosThetaMiss ;
 	totalEnergy = event.totalEnergy ;
 
@@ -120,7 +128,7 @@ void EventReader::setTree(TTree* _tree)
 {
 	tree = _tree ;
 
-	tree->SetBranchAddress("goodEvent" , &goodEvent) ;
+	tree->SetBranchAddress("failedStep" , &failedStep) ;
 
 	tree->SetBranchAddress("sqrtS" , &sqrtS) ;
 
@@ -138,10 +146,11 @@ void EventReader::setTree(TTree* _tree)
 	tree->SetBranchAddress("zMass" , &zMass) ;
 	tree->SetBranchAddress("recMass" , &recMass) ;
 
-
+	tree->SetBranchAddress("validVec" , &validVec) ;
 	tree->SetBranchAddress("zMassVec" , &zMassVec) ;
 	tree->SetBranchAddress("recMassVec" , &recMassVec) ;
-
+	tree->SetBranchAddress("cosThetaZVec" , &cosThetaZVec) ;
+	tree->SetBranchAddress("zPtVec" , &zPtVec) ;
 
 	tree->SetBranchAddress("cosThetaZ" , &cosThetaZ) ;
 	tree->SetBranchAddress("cosThetaZ12" , &cosThetaZ12) ;
@@ -165,6 +174,7 @@ void EventReader::setTree(TTree* _tree)
 	tree->SetBranchAddress("z12pt" , &z12pt) ;
 	tree->SetBranchAddress("w3pt" , &w3pt) ;
 
+	tree->SetBranchAddress("pMiss" , &pMiss) ;
 	tree->SetBranchAddress("cosThetaMiss" , &cosThetaMiss) ;
 
 	tree->SetBranchAddress("totalEnergy" , &totalEnergy) ;
@@ -178,7 +188,7 @@ void EventReader::setTreeWrite(TTree* _tree)
 {
 	_tree->Branch("processID" , &processID) ;
 
-	_tree->Branch("goodEvent" , &goodEvent) ;
+	_tree->Branch("failedStep" , &failedStep) ;
 
 	_tree->Branch("sqrtS" , &sqrtS) ;
 
@@ -194,8 +204,11 @@ void EventReader::setTreeWrite(TTree* _tree)
 	_tree->Branch("zMass" , &zMass) ;
 	_tree->Branch("recMass" , &recMass) ;
 
+	_tree->Branch("validVec" , &validVec) ;
 	_tree->Branch("zMassVec" , &zMassVec) ;
 	_tree->Branch("recMassVec" , &recMassVec) ;
+	_tree->Branch("cosThetaZVec" , &cosThetaZVec) ;
+	_tree->Branch("zPtVec" , &zPtVec) ;
 
 	_tree->Branch("cosThetaZ" , &cosThetaZ) ;
 	_tree->Branch("cosThetaZ12" , &cosThetaZ12) ;
@@ -219,6 +232,7 @@ void EventReader::setTreeWrite(TTree* _tree)
 	_tree->Branch("z12pt" , &z12pt) ;
 	_tree->Branch("w3pt" , &w3pt) ;
 
+	_tree->Branch("pMiss" , &pMiss) ;
 	_tree->Branch("cosThetaMiss" , &cosThetaMiss) ;
 
 	_tree->Branch("totalEnergy" , &totalEnergy) ;

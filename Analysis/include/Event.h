@@ -18,7 +18,7 @@ struct Event
 
 		int processID = 0 ;
 
-		bool goodEvent = true ;
+		int failedStep = 0 ;
 
 		double sqrtS = 0 ;
 
@@ -34,8 +34,11 @@ struct Event
 		double zMass = 0 ;
 		double recMass = 0 ;
 
+		std::vector<bool> validVec = {} ;
 		std::vector<double> zMassVec = {} ;
 		std::vector<double> recMassVec = {} ;
+		std::vector<double> cosThetaZVec = {} ;
+		std::vector<double> zPtVec = {} ;
 
 		double cosThetaZ = 0 ;
 		double cosThetaZ12 = 0 ;
@@ -59,6 +62,7 @@ struct Event
 		double z12pt = 0 ;
 		double w3pt = 0 ;
 
+		std::vector<double> pMiss = {} ;
 		double cosThetaMiss = 0 ;
 
 		double totalEnergy = 0 ;
@@ -91,7 +95,7 @@ class EventReader
 
 	protected :
 
-		bool goodEvent = true ;
+		int failedStep = 0 ;
 
 		double sqrtS = 0 ;
 
@@ -107,8 +111,11 @@ class EventReader
 		double zMass = 0 ;
 		double recMass = 0 ;
 
+		std::vector<bool>* validVec = nullptr ;
 		std::vector<double>* zMassVec = nullptr ;
 		std::vector<double>* recMassVec = nullptr ;
+		std::vector<double>* cosThetaZVec = nullptr ;
+		std::vector<double>* zPtVec = nullptr ;
 
 		double cosThetaZ = 0 ;
 		double cosThetaZ12 = 0 ;
@@ -132,6 +139,7 @@ class EventReader
 		double z12pt = 0 ;
 		double w3pt = 0 ;
 
+		std::vector<double>* pMiss = nullptr ;
 		double cosThetaMiss = 0 ;
 
 		double totalEnergy = 0 ;

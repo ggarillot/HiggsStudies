@@ -74,4 +74,25 @@ static const std::map<int , ChannelInfo> ChannelInfoMap =
 	{ 106572 , {106572 , 130.78916 , RL} }
 } ;
 
+struct HiggsDecayMode
+{
+		std::string name ;
+		double xSect ;
+		int decayID ;
+		int subDecayID ;
+};
+
+static const std::map<std::string , HiggsDecayMode> higgsDecayMap =
+{
+	{ "H->bb"      , { "H->bb"      , 0.578  , 5  , 0} } ,
+	{ "H->cc"      , { "H->cc"      , 0.027  , 4  , 0} } ,
+	{ "H->gg"      , { "H->gg"      , 0.086  , 21 , 0} } ,
+	{ "H->tau tau" , { "H->tau tau" , 0.064  , 15 , 0} } ,
+	{ "H->WW"      , { "H->WW"      , 0.216  , 24 , 0} } ,
+	{ "H->ZZ"      , { "H->ZZ"      , 0.027  , 23 , 0} } ,
+	{ "H->gam gam" , { "H->gam gam" , 0.0023 , 22 , 0} } ,
+	{ "H->Z gam"   , { "H->Z gam"   , 0.0016 , 25 , 0} } ,
+	{ "H->inv"     , { "H->inv"     , 0.001  , 23 , 7} }
+} ;
+
 #endif //Process_h
