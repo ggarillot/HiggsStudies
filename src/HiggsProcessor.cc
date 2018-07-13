@@ -451,7 +451,7 @@ std::pair<int,int> HiggsProcessor::findDecayModeZZqqll(LCCollection* _mcCol)
 
 std::pair<int, int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 {
-	if ( processID == 106485 || processID == 106486 )
+	if ( processID == 106485 || processID == 106486 || processID == 106525 || processID == 106526 )
 		return findDecayModeSignal(_mcCol) ;
 	else if ( processID == 106551 || processID == 106552 )
 		return findDecayModeWWqqqq(_mcCol) ;

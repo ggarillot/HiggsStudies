@@ -40,7 +40,7 @@ def launch(a , files) :
 
  	<processor name="HiggsProcessor" type="HiggsProcessor">
  	 	<parameter name="ProcessID" type="float">''' + str(a.processID) + '''</parameter>
- 		<parameter name="sqrtS" type="float">''' + str(a.sqrtS) + '''</parameter>
+ 		<parameter name="CenterOfMassEnergy" type="float">''' + str(a.sqrtS) + '''</parameter>
  		<parameter name="yCut" type="float">''' + str(a.yCut) + '''</parameter>
   		<parameter name="valueAngle" type="float">''' + str(a.valueAngle) + '''</parameter>
  		<parameter name="alphaAngle" type="float">''' + str(a.alphaAngle) + '''</parameter>
