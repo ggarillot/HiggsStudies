@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cmath>
 #include <complex>
+#include <set>
 
 #include <EVENT/LCCollection.h>
 #include <EVENT/MCParticle.h>
@@ -93,6 +94,7 @@ void HiggsProcessor::init()
 
 	tree->Branch("runNumber" , &runNumber) ;
 	tree->Branch("evtNumber" , &evtNumber) ;
+	tree->Branch("processID" , &processID) ;
 
 	tree->Branch("failedStep" , &failedStep) ;
 
@@ -451,7 +453,10 @@ std::pair<int,int> HiggsProcessor::findDecayModeZZqqll(LCCollection* _mcCol)
 
 std::pair<int, int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 {
-	if ( processID == 106485 || processID == 106486 || processID == 106525 || processID == 106526 )
+	std::set<int> signal = { 106485 , 106486 , 108015 , 108016 , 108079 , 108080 , 108031 , 108032 , 108047 , 108048 , 108063 , 108064 , 106525 , 106526 } ;
+
+	//	if ( processID == 106485 || processID == 106486 || processID == 106525 || processID == 106526 )
+	if ( signal.count(processID) )
 		return findDecayModeSignal(_mcCol) ;
 	else if ( processID == 106551 || processID == 106552 )
 		return findDecayModeWWqqqq(_mcCol) ;
