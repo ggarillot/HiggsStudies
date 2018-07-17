@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -130,23 +131,17 @@ void printMap(std::map<std::string , std::array<int,10>>& map)
 	}
 }
 
-std::map< std::string , std::array< std::array<double,2> , 2 > > computeWeightsDifferentSM()
+std::map< std::string , std::array<double,2> > computeWeightsDifferentSM()
 {
-	std::map< std::string , std::array< std::array<double,2> , 2 > > map ;
+	std::map< std::string , std::array<double,2> > map ;
 
 	for ( const auto& proc : higgsDecayMap )
 	{
 		double xSect = proc.second.xSect ;
-		double xSectLess = xSect - 0.05 ;
-		if ( xSectLess < 0 )
-			xSectLess = 0 ;
-
 		double xSectMore = xSect + 0.05 ;
 
-		std::array<double , 2> weightsLess = {{ xSectLess/xSect , (1-xSectLess)/(1-xSect) }} ;
 		std::array<double , 2> weightsMore = {{ xSectMore/xSect , (1-xSectMore)/(1-xSect) }} ;
-
-		map.insert( { proc.first , {{weightsLess , weightsMore}} } ) ;
+		map.insert( { proc.first , weightsMore } ) ;
 	}
 
 	return map ;
@@ -154,6 +149,8 @@ std::map< std::string , std::array< std::array<double,2> , 2 > > computeWeightsD
 
 int main ( int argc , char** argv )
 {
+	const std::set<int> signal = { 106485 , 106486 , 108015 , 108016 , 108079 , 108080 , 108031 , 108032 , 108047 , 108048 , 108063 , 108064 , 106525 , 106526 } ;
+
 	if ( argc == 1 )
 	{
 		std::cout << "ERROR : no pol provided " << std::endl ;
@@ -213,7 +210,7 @@ int main ( int argc , char** argv )
 	std::array< std::array<double,10> , 2> nEventsSignalOrBackground = {} ;
 
 	auto weightsDifferentSM = computeWeightsDifferentSM() ;
-	std::map<std::string , std::array<double,2> > nEventsDifferentSM = {} ;
+	std::map<std::string , double> nEventsDifferentSM = {} ;
 
 	std::map<std::string , std::array<double,10>> nEventsProcessMap = {} ;
 	std::map<std::string , std::array<int,10>> processSelecMap = {} ;
@@ -251,7 +248,7 @@ int main ( int argc , char** argv )
 
 
 		for ( const auto& proc : higgsDecayMap )
-			nEventsDifferentSM.insert( { proc.first , {{0.0 , 0.0}} } ) ;
+			nEventsDifferentSM.insert( { proc.first , 0.0 } ) ;
 
 
 		eventReader.setTree(tree) ;
@@ -265,6 +262,15 @@ int main ( int argc , char** argv )
 			eventReader.processID = processID ;
 			auto process = Process::getProcess(event) ;
 
+			//
+			if ( processID == 106485 || processID == 106486 )
+				if ( event.decayID == 13 || event.decayID == 22 || event.decayID == 23 || event.decayID == 25 )
+					continue ;
+
+			if ( processID == 108063 || processID == 108064 )
+				if ( event.subDecayID == 7 )
+					continue ;
+
 			auto cutVal = cut(event) ;
 
 			for ( unsigned int i = 0 ; i <= cutVal ; ++i )
@@ -272,7 +278,7 @@ int main ( int argc , char** argv )
 				nEventsProcessMap[ process ][i] += weight ;
 				processSelecMap[ process ][i] ++ ;
 
-				if ( processID == 106485 || processID == 106486 )
+				if ( signal.count(processID) )
 				{
 					nEventsSignalOrBackground[0].at(i) += weight ;
 
@@ -283,28 +289,16 @@ int main ( int argc , char** argv )
 						if ( decay.first == std::string("H->inv") )
 						{
 							if ( event.decayID == 23 && event.subDecayID == 7 )
-							{
-								nEventsDifferentSM[decay.first][0] += weight*weightsDifferentSM.at(decay.first)[0][0] ;
-								nEventsDifferentSM[decay.first][1] += weight*weightsDifferentSM.at(decay.first)[1][0] ;
-							}
+								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[0] ;
 							else
-							{
-								nEventsDifferentSM[decay.first][0] += weight*weightsDifferentSM.at(decay.first)[0][1] ;
-								nEventsDifferentSM[decay.first][1] += weight*weightsDifferentSM.at(decay.first)[1][1] ;
-							}
+								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[1] ;
 							continue ;
 						}
 
 						if ( event.decayID == decay.second.decayID )
-						{
-							nEventsDifferentSM[decay.first][0] += weight*weightsDifferentSM.at(decay.first)[0][0] ;
-							nEventsDifferentSM[decay.first][1] += weight*weightsDifferentSM.at(decay.first)[1][0] ;
-						}
+							nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[0] ;
 						else
-						{
-							nEventsDifferentSM[decay.first][0] += weight*weightsDifferentSM.at(decay.first)[0][1] ;
-							nEventsDifferentSM[decay.first][1] += weight*weightsDifferentSM.at(decay.first)[1][1] ;
-						}
+							nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[1] ;
 					}
 				}
 				else
@@ -329,7 +323,7 @@ int main ( int argc , char** argv )
 		}
 
 
-		if ( processID != 106485 && processID != 106486 )
+		if ( !signal.count(processID) )
 			continue ;
 
 		iEntry = 0 ;
@@ -340,6 +334,14 @@ int main ( int argc , char** argv )
 			event.processID = processID ;
 			eventReader.processID = processID ;
 			auto process = Process::getSubProcess(event) ;
+
+			if ( processID == 106485 || processID == 106486 )
+				if ( event.decayID == 13 || event.decayID == 22 || event.decayID == 23 || event.decayID == 25 )
+					continue ;
+
+			if ( processID == 108063 || processID == 108064 )
+				if ( event.subDecayID == 7 )
+					continue ;
 
 			auto cutVal = cut(event) ;
 
@@ -450,14 +452,11 @@ int main ( int argc , char** argv )
 
 	for ( const auto& it : nEventsDifferentSM )
 	{
-		double xSectLess = it.second[0]/(lumi*effZH) ;
-		double xSectMore = it.second[1]/(lumi*effZH) ;
+		double xSectMore = it.second/(lumi*effZH) ;
 
 		std::cout << std::right << std::setw(13) << it.first << " : " ;
-		std::cout << std::fixed << std::setprecision(2) << std::right << std::setw(7) << 100*(xSectLess - xSect)/xSect << " " ;
 		std::cout << std::fixed << std::setprecision(2) << std::right << std::setw(7) << 100*(xSectMore - xSect)/xSect << " " ;
 		std::cout << std::endl ;
-//		std::cout << it.first << " : " << 100*(xSectLess - xSect)/xSect << " , " << 100*(xSectMore - xSect)/xSect << std::endl ;
 	}
 
 

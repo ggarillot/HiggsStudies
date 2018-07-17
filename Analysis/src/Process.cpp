@@ -1,17 +1,31 @@
 #include "Process.h"
 
 
+Process::Process(std::string _name , Color_t _color)
+	: name(_name),
+	  color(_color)
+{
+	for ( const auto& pol : {LL,LR,RL,RR} )
+	{
+		nSelected.insert( { pol , 0 } ) ;
+		nTotal.insert( { pol , 0 } ) ;
+	}
+}
+
 std::string Process::getProcess(const Event& event)
 {
-	if ( event.processID == 106485 || event.processID == 106486 )
+	const std::set<int> signal = { 106485 , 106486 , 108015 , 108016 , 108079 , 108080 , 108031 , 108032 , 108047 , 108048 , 108063 , 108064 , 106525 , 106526 } ;
+	const std::set<int> qqqq = { 106551 , 106552 , 106573 , 106574 } ;
+	const std::set<int> qqlv = { 106577 , 106578 , 106563 , 106564 , 106565 , 106566 , 250018 , 250020 } ;
+	const std::set<int> qq = { 106607 , 106608 , 250114 , 250116 } ;
+
+	if ( signal.count(event.processID) )
 		return std::string("ZH") ;
-	else if ( event.processID == 106551 || event.processID == 106552 )
+	else if ( qqqq.count(event.processID) )
 		return std::string("qqqq") ;
-	else if ( event.processID == 106577 || event.processID == 106578 || event.processID == 106564 || event.processID == 106566 || event.processID == 106563 || event.processID == 106565 )
+	else if ( qqlv.count(event.processID) )
 		return std::string("qqlv") ;
-	else if ( event.processID == 106573 || event.processID == 106574 )
-		return std::string("qqqq") ;
-	else if ( event.processID == 106607 || event.processID == 106608 )
+	else if ( qq.count(event.processID) )
 		return std::string("qq") ;
 	else if ( event.processID == 106575 || event.processID == 106576 )
 	{
@@ -33,7 +47,9 @@ std::string Process::getProcess(const Event& event)
 
 std::string Process::getSubProcess(const Event& event)
 {
-	if ( event.processID != 106485 && event.processID != 106486 )
+	const std::set<int> signal = { 106485 , 106486 , 108015 , 108016 , 108079 , 108080 , 108031 , 108032 , 108047 , 108048 , 108063 , 108064 , 106525 , 106526 } ;
+
+	if ( !signal.count(event.processID) )
 		throw ;
 
 	if ( event.decayID == 1 )
