@@ -8,7 +8,8 @@ namespace Cut
 
 bool isInvis(const Event& event)
 {
-	if ( event.mass2Jet < 120 && event.nJets < 4 && event.nIsoLep == 0 )
+//	if ( event.mass2Jet < 110 && event.nJets < 4 )
+	if ( event.mass2Jet < 110 && event.y34 > 2.22 )
 		return true ;
 	else
 		return false ;
@@ -27,10 +28,10 @@ bool range(const Event& event)
 
 bool zPt(const Event& event)
 {
-	if ( event.zPt < 20 )
-		return false ;
-	else
+	if ( event.zPt > 21 )
 		return true ;
+	else
+		return false ;
 }
 
 bool cosThetaMiss(const Event& event)
@@ -71,15 +72,7 @@ bool range(const Event& event)
 
 bool zPt(const Event& event)
 {
-	if ( event.zPtVec[2] < 20 )
-		return false ;
-	else
-		return true ;
-}
-
-bool cosThetaMiss(const Event& event)
-{
-	if ( std::abs(event.cosThetaMiss) < 0.65 )
+	if ( event.zPtVec[2] > 21 )
 		return true ;
 	else
 		return false ;
@@ -87,7 +80,7 @@ bool cosThetaMiss(const Event& event)
 
 bool cosThetaZ(const Event& event)
 {
-	if ( std::abs(event.cosThetaZVec[2]) < 0.9 )
+	if ( std::abs(event.cosThetaZVec[2]) < 0.6 )
 		return true ;
 	else
 		return false ;
@@ -101,6 +94,14 @@ bool massVsEnergy(const Event& event)
 		return false ;
 }
 
+bool thrust(const Event& event)
+{
+	if ( event.majorThrust > 0.55 && event.majorThrust < 0.65 && event.minorThrust < 0.12 )
+		return false ;
+	else
+		return true ;
+}
+
 }
 
 
@@ -112,8 +113,7 @@ bool WW_h(const Event& event)
 	}
 	else
 	{
-//				if ( (event.ww12mass-80.5)*(event.ww12mass-80.5) + (event.ww34mass-79.5)*(event.ww34mass-79.5) > 100 )
-				if ( (event.ww12mass-80)*(event.ww12mass-80)+ (event.ww34mass-80)*(event.ww34mass-80) > 100 )
+		if ( (event.ww12mass-80.43)*(event.ww12mass-80.43) + (event.ww34mass-80)*(event.ww34mass-80) > 100 )
 			return true ;
 		else
 			return false ;
@@ -128,8 +128,7 @@ bool ZZ_h(const Event& event)
 	}
 	else
 	{
-//		if ( (event.zz12mass-91.2)*(event.zz12mass-91.2) + (event.zz34mass-90)*(event.zz34mass-90) > 100 )
-		if ( (event.zz12mass-90)*(event.zz12mass-90) + (event.zz34mass-90)*(event.zz34mass-90) > 100 )
+		if ( (event.zz12mass-91.2)*(event.zz12mass-91.2) + (event.zz34mass-90)*(event.zz34mass-90) > 100 )
 			return true ;
 		else
 			return false ;
@@ -138,7 +137,7 @@ bool ZZ_h(const Event& event)
 
 bool WW_sl(const Event& event)
 {
-	if ( !(event.wwMass3<85 && event.wwMass3>75) || !(event.wwRecMass3>60 && event.wwRecMass3<160) )
+	if ( !(event.wwMass3>75 && event.wwMass3<85) || !(event.wwRecMass3>60 && event.wwRecMass3<160) )
 		return true ;
 	else
 		return false ;
@@ -146,11 +145,88 @@ bool WW_sl(const Event& event)
 
 bool thrust(const Event& event)
 {
-	if ( event.minorThrust > 0.12 || event.majorThrust > 0.35 )
+	if ( event.minorThrust > 0.10 || event.majorThrust > 0.40 )
 		return true ;
 	else
 		return false ;
 }
+
+
+unsigned int finalCut(const Event& event)
+{
+	if ( event.failedStep != 0 )
+		return 1 ;
+
+	if ( Cut::isInvis(event) )
+	{
+		if ( !event.validVec[2] )
+			return 1 ;
+		if ( !Cut::Invis::range(event) )
+			return 2 ;
+
+
+		if ( !Cut::Invis::zPt(event) )
+			return 3 ;
+		if ( !Cut::Invis::cosThetaZ(event) )
+			return 3 ;
+
+		if ( !Cut::Invis::massVsEnergy(event) )
+			return 4 ;
+
+
+		//		if ( !Cut::Invis::thrust(event) )
+		//			return 5 ;
+
+
+		if ( !Cut::WW_h(event) )
+			return 6 ;
+
+		if ( !Cut::ZZ_h(event) )
+			return 7 ;
+
+
+
+		if ( !Cut::WW_sl(event) )
+			return 8 ;
+		if ( event.nIsoLep > 0 )
+			return 8 ;
+
+		return 9 ;
+	}
+	else
+	{
+		if ( !Cut::Vis::range(event) )
+			return 2 ;
+
+
+		if ( !Cut::Vis::zPt(event) )
+			return 3 ;
+		if ( !Cut::Vis::cosThetaMiss(event) )
+			return 3 ;
+		if ( !Cut::Vis::cosThetaZ(event) )
+			return 3 ;
+
+		if ( !Cut::Vis::massVsEnergy(event) )
+			return 4 ;
+
+		if ( event.nIsoLep == 0 )
+			if ( !Cut::thrust(event) )
+				return 5 ;
+
+		if ( !Cut::WW_h(event) )
+			return 6 ;
+
+		if ( !Cut::ZZ_h(event) )
+			return 7 ;
+
+		if ( !Cut::WW_sl(event) )
+			return 8 ;
+
+		return 9 ;
+	}
+}
+
+
 
 }
 #endif //Cuts_h

@@ -25,84 +25,35 @@ std::array<double , 2> getEfficienciesBound(int passed , int total)
 	return toReturn ;
 }
 
-void cat(const Event& event , std::map<std::string , std::array<int,7>>& map , bool sub = false)
-{
-	auto process = Process::getProcess(event) ;
+//void cat(const Event& event , std::map<std::string , std::array<int,7>>& map , bool sub = false)
+//{
+//	auto process = Process::getProcess(event) ;
 
-	if ( sub )
-		process = Process::getSubProcess(event) ;
+//	if ( sub )
+//		process = Process::getSubProcess(event) ;
 
-	map[ process ][0] ++ ;
+//	map[ process ][0] ++ ;
 
-	if ( event.failedStep != 0 )
-		map[ process ][1] ++ ;
-	else if ( event.mass2Jet < 120 && event.nJets < 4 && event.nIsoLep == 0 )
-		map[ process ][2] ++ ;
-	else if ( std::sqrt(event.pMiss[0]*event.pMiss[0] + event.pMiss[1]*event.pMiss[1]) > 20 && event.nJets == 3 )
-		map[ process ][3] ++ ;
-	else if ( std::sqrt(event.pMiss[0]*event.pMiss[0] + event.pMiss[1]*event.pMiss[1]) > 20 && event.nJets > 3 )
-		map[ process ][4] ++ ;
-	else if ( std::sqrt(event.pMiss[0]*event.pMiss[0] + event.pMiss[1]*event.pMiss[1]) < 20 )
-		map[ process ][5] ++ ;
-	else
-		map[ process ][6] ++ ;
-}
+//	if ( event.failedStep != 0 )
+//		map[ process ][1] ++ ;
+//	else if ( event.mass2Jet < 120 && event.nJets < 4 && event.nIsoLep == 0 )
+//		map[ process ][2] ++ ;
+//	else if ( std::sqrt(event.pMiss[0]*event.pMiss[0] + event.pMiss[1]*event.pMiss[1]) > 20 && event.nJets == 3 )
+//		map[ process ][3] ++ ;
+//	else if ( std::sqrt(event.pMiss[0]*event.pMiss[0] + event.pMiss[1]*event.pMiss[1]) > 20 && event.nJets > 3 )
+//		map[ process ][4] ++ ;
+//	else if ( std::sqrt(event.pMiss[0]*event.pMiss[0] + event.pMiss[1]*event.pMiss[1]) < 20 )
+//		map[ process ][5] ++ ;
+//	else
+//		map[ process ][6] ++ ;
+//}
 
-unsigned int cut(const Event& event)
-{
-	if ( event.failedStep != 0 )
-		return 1 ;
 
-	if ( Cut::isInvis(event) )
-	{
-		if ( !Cut::Invis::range(event) )
-			return 2 ;
-
-		if ( !(Cut::Invis::zPt(event) && Cut::Invis::cosThetaMiss(event) && Cut::Invis::cosThetaZ(event)) )
-			return 3 ;
-
-		if ( !Cut::Invis::massVsEnergy(event) )
-			return 4 ;
-
-		if ( !Cut::WW_sl(event) )
-			return 8 ;
-		if ( event.nIsoLep > 0 )
-			return 8 ;
-
-		return 9 ;
-	}
-	else
-	{
-		if ( !Cut::Vis::range(event) )
-			return 2 ;
-
-		if ( !(Cut::Vis::zPt(event) && Cut::Vis::cosThetaMiss(event) && Cut::Vis::cosThetaZ(event)) )
-			return 3 ;
-
-		if ( !Cut::Vis::massVsEnergy(event) )
-			return 4 ;
-
-		if ( event.nIsoLep == 0 )
-			if ( !Cut::thrust(event) )
-				return 5 ;
-
-		if ( !Cut::WW_h(event) )
-			return 6 ;
-
-		if ( !Cut::ZZ_h(event) )
-			return 7 ;
-
-		if ( !Cut::WW_sl(event) )
-			return 8 ;
-
-		return 9 ;
-	}
-}
 
 void printMap(std::map<std::string , std::array<int,10>>& map)
 {
 	std::array<std::string,10> cutsName = {{"" , "all" , "fail" , "range" , "zPt" , "mVsE" , "thru" , "ww" , "zz" , "ww3"}} ;
-	std::cout << std::right << std::setw(13) << "Process" << " : " ;
+	std::cout << std::right << std::setw(20) << "Process" << " : " ;
 	for ( unsigned int i = 1 ; i < cutsName.size() ; ++i )
 	{
 		std::cout << std::internal << std::setw(7) << cutsName[i] << " " ;
@@ -119,7 +70,7 @@ void printMap(std::map<std::string , std::array<int,10>>& map)
 			effVec[ i-1 ] = 1.0*process.second[i]/process.second[0] ;
 
 
-		std::cout << std::right << std::setw(13) << process.first << " : " ;
+		std::cout << std::right << std::setw(20) << process.first << " : " ;
 		for ( const auto& eff : effVec )
 		{
 			std::cout << std::fixed << std::setprecision(2) << std::internal << std::setw(7) << 100*eff << " " ;
@@ -204,7 +155,6 @@ int main ( int argc , char** argv )
 	for ( auto it = ChannelInfoMap.begin() ; it != ChannelInfoMap.end() ; ++it )
 		processIDVec.push_back(it->first) ;
 
-
 	std::string dir = argv[2] ;
 
 	std::array< std::array<double,10> , 2> nEventsSignalOrBackground = {} ;
@@ -271,7 +221,7 @@ int main ( int argc , char** argv )
 				if ( event.subDecayID == 7 )
 					continue ;
 
-			auto cutVal = cut(event) ;
+			auto cutVal = Cut::finalCut(event) ;
 
 			for ( unsigned int i = 0 ; i <= cutVal ; ++i )
 			{
@@ -286,19 +236,20 @@ int main ( int argc , char** argv )
 						continue ;
 					for ( const auto& decay : higgsDecayMap )
 					{
-						if ( decay.first == std::string("H->inv") )
+						if ( decay.first == std::string("H->ZZ->vvvv") )
 						{
 							if ( event.decayID == 23 && event.subDecayID == 7 )
 								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[0] ;
 							else
 								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[1] ;
-							continue ;
 						}
-
-						if ( event.decayID == decay.second.decayID )
-							nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[0] ;
 						else
-							nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[1] ;
+						{
+							if ( event.decayID == decay.second.decayID )
+								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[0] ;
+							else
+								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[1] ;
+						}
 					}
 				}
 				else
@@ -333,7 +284,7 @@ int main ( int argc , char** argv )
 
 			event.processID = processID ;
 			eventReader.processID = processID ;
-			auto process = Process::getSubProcess(event) ;
+			auto processList = Process::getSubProcess(event) ;
 
 			if ( processID == 106485 || processID == 106486 )
 				if ( event.decayID == 13 || event.decayID == 22 || event.decayID == 23 || event.decayID == 25 )
@@ -343,58 +294,38 @@ int main ( int argc , char** argv )
 				if ( event.subDecayID == 7 )
 					continue ;
 
-			auto cutVal = cut(event) ;
+			auto cutVal = Cut::finalCut(event) ;
 
 
 			for ( unsigned int i = 0 ; i <= cutVal ; ++i )
 			{
-				nEventsProcessMap[ process ][i] += weight ;
-				processSelecMap[ process ][i] ++ ;
+				for ( const auto& process : processList )
+				{
+					nEventsProcessMap[ process ][i] += weight ;
+					processSelecMap[ process ][i] ++ ;
+				}
 			}
 
 			if ( Cut::isInvis(event) )
 			{
-				processSelecMapVis[ process ][0] ++ ;
+				for ( const auto& process : processList )
+				{
+					processSelecMapVis[ process ][0] ++ ;
 
-				for ( unsigned int i = 0 ; i <= cutVal ; ++i )
-					processSelecMapInvis[ process ][i] ++ ;
+					for ( unsigned int i = 0 ; i <= cutVal ; ++i )
+						processSelecMapInvis[ process ][i] ++ ;
+				}
 			}
 			else
 			{
-				processSelecMapInvis[ process ][0] ++ ;
+				for ( const auto& process : processList )
+				{
+					processSelecMapInvis[ process ][0] ++ ;
 
-				for ( unsigned int i = 0 ; i <= cutVal ; ++i )
-					processSelecMapVis[ process ][i] ++ ;
+					for ( unsigned int i = 0 ; i <= cutVal ; ++i )
+						processSelecMapVis[ process ][i] ++ ;
+				}
 			}
-
-			if ( event.decayID == 23 )
-				process = std::string("H->ZZ") ;
-			else if ( event.decayID == 24 )
-				process = std::string("H->WW") ;
-			else
-				continue ;
-
-			for ( unsigned int i = 0 ; i <= cutVal ; ++i )
-			{
-				nEventsProcessMap[ process ][i] += weight ;
-				processSelecMap[ process ][i] ++ ;
-			}
-
-			if ( Cut::isInvis(event) )
-			{
-				processSelecMapVis[ process ][0] ++ ;
-
-				for ( unsigned int i = 0 ; i <= cutVal ; ++i )
-					processSelecMapInvis[ process ][i] ++ ;
-			}
-			else
-			{
-				processSelecMapInvis[ process ][0] ++ ;
-
-				for ( unsigned int i = 0 ; i <= cutVal ; ++i )
-					processSelecMapVis[ process ][i] ++ ;
-			}
-
 		}
 
 
@@ -414,7 +345,7 @@ int main ( int argc , char** argv )
 	double effZH = 1.0*procZH[9]/procZH[0] ;
 
 	std::array<std::string,5> cutsName = {{"eff" , "effErr" , "devLower" , " dev" , "devUpper"}} ;
-	std::cout << std::right << std::setw(13) << "Process" << " : " ;
+	std::cout << std::right << std::setw(20) << "Process" << " : " ;
 	for ( unsigned int i = 0 ; i < cutsName.size() ; ++i )
 	{
 		std::cout << std::fixed << std::right << std::setw(7) << cutsName[i] << " " ;
@@ -429,7 +360,7 @@ int main ( int argc , char** argv )
 
 		double err = (eff*(1-eff))/processSelecMap.at(process.first)[0] ;
 		err = std::sqrt(err) ;
-		std::cout << std::right << std::setw(13) << process.first << " : " ;
+		std::cout << std::right << std::setw(20) << process.first << " : " ;
 		//		std::cout << std::fixed << std::setprecision(2) << std::internal << std::setw(7) << 100*bounds[0] << " " ;
 		std::cout << std::fixed << std::setprecision(2) << std::right << std::setw(7) << 100*eff << " " ;
 		//		std::cout << std::fixed << std::setprecision(2) << std::internal << std::setw(7) << 100*bounds[1] << " " ;
@@ -447,18 +378,39 @@ int main ( int argc , char** argv )
 	for ( unsigned int i = 0 ; i < 10 ; ++i )
 		std::cout << "Scinificance " << i << " : " << nEventsSignalOrBackground[0][i]/std::sqrt(nEventsSignalOrBackground[0][i] + nEventsSignalOrBackground[1][i]) << std::endl ;
 
+	std::cout << "nEventsSignal : " << nEventsSignalOrBackground[0][9] << " , nEventsBackground : " << nEventsSignalOrBackground[1][9] << std::endl ;
+
 	double xSect = nEventsSignalOrBackground[0][9]/(lumi*effZH) ;
 	std::cout << "xSect : " << xSect << std::endl ;
 
+	std::cout << "+5% bias : " << std::endl ;
 	for ( const auto& it : nEventsDifferentSM )
 	{
 		double xSectMore = it.second/(lumi*effZH) ;
 
-		std::cout << std::right << std::setw(13) << it.first << " : " ;
+		std::cout << std::right << std::setw(20) << it.first << " : " ;
+		//		std::cout << std::fixed << std::setprecision(2) << std::right << std::setw(7) << it.second << " " ;
 		std::cout << std::fixed << std::setprecision(2) << std::right << std::setw(7) << 100*(xSectMore - xSect)/xSect << " " ;
 		std::cout << std::endl ;
 	}
 
+	std::cout << "+5% th bias : " << std::endl ;
+	for ( const auto& it : higgsDecayMap )
+	{
+		double br = it.second.xSect ;
+		double brOther = 1-br ;
+		double effProcess = 1.0*nEventsProcessMap.at(it.first)[9]/nEventsProcessMap.at(it.first)[0] ;
+		double effOther = (effZH-effProcess*br)/brOther ;
+
+		double effBias = (br+0.05)*effProcess + (brOther-0.05)*effOther ;
+
+
+		std::cout << std::right << std::setw(20) << it.first << " : " ;
+		std::cout << std::fixed << std::setprecision(2) << std::right << std::setw(7) << 100*(effBias - effZH)/effZH << " " ;
+		std::cout << std::endl ;
+
+
+	}
 
 	return 0 ;
 }

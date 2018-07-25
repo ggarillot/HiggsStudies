@@ -455,7 +455,6 @@ std::pair<int, int> HiggsProcessor::findDecayMode(LCCollection* _mcCol)
 {
 	std::set<int> signal = { 106485 , 106486 , 108015 , 108016 , 108079 , 108080 , 108031 , 108032 , 108047 , 108048 , 108063 , 108064 , 106525 , 106526 } ;
 
-	//	if ( processID == 106485 || processID == 106486 || processID == 106525 || processID == 106526 )
 	if ( signal.count(processID) )
 		return findDecayModeSignal(_mcCol) ;
 	else if ( processID == 106551 || processID == 106552 )
@@ -801,31 +800,7 @@ std::pair<DiJet,DiJet> HiggsProcessor::choosePairDiJets(const std::vector<fastje
 		throw std::logic_error("Error in HiggsProcessor::choosePairDiJets : not 4 jets") ;
 
 	std::vector<unsigned int> okJets = {0,1,2,3} ;
-	/*
-	std::vector<unsigned int> notOkJets = {} ;
 
-	for ( unsigned int i = 0 ; i < 4 ; ++i )
-	{
-		int nb = 0 ;
-		const auto& jet = jets[i] ;
-		auto cs = jet.associated_cs() ;
-		std::vector<fastjet::PseudoJet> constituants = cs->constituents(jet) ;
-		for ( const auto& part : constituants )
-		{
-			auto info = dynamic_cast<const ParticleInfo*>( part.user_info_ptr() ) ;
-
-			if ( std::abs( info->recoParticle()->getCharge() ) > std::numeric_limits<float>::epsilon() )
-				nb++ ;
-		}
-		if ( nb > 2 )
-			okJets.push_back(i) ;
-		else
-			notOkJets.push_back(i) ;
-	}
-
-	if ( okJets.size() < 2 )
-		throw std::logic_error("Error in HiggsProcessor::choosePairDiJets : fewer than 2 ok jets") ;
-	*/
 	double chi2 = std::numeric_limits<double>::max() ;
 
 	std::vector<unsigned int> goodPair = {} ;
@@ -855,34 +830,6 @@ std::pair<DiJet,DiJet> HiggsProcessor::choosePairDiJets(const std::vector<fastje
 	}
 
 	return { DiJet( jets.at(goodPair[0]) , jets.at(goodPair[1]) ) , DiJet( jets.at(other[0]) , jets.at(other[1]) ) } ;
-
-	/*
-
-	std::vector< std::array<unsigned int,4> > vec ;
-	vec.push_back({{0,1,2,3}}) ;
-	vec.push_back({{0,2,1,3}}) ;
-	vec.push_back({{0,3,1,2}}) ;
-	vec.push_back({{2,3,0,1}}) ;
-	vec.push_back({{1,3,0,2}}) ;
-	vec.push_back({{1,2,0,3}}) ;
-
-	for ( const auto& i : vec )
-	{
-		std::pair<DiJet , DiJet> pair = { DiJet(jets.at(i.at(0)) , jets.at(i.at(1))) , DiJet(jets.at(i.at(2)) , jets.at(i.at(3))) } ;
-
-		double a = (pair.first.diJet().m() - targetMass) ;
-		double b = (pair.second.diJet().m() - targetMass) ;
-		double tempChi2 = a*a + b*b ;
-
-		if ( tempChi2 < chi2 )
-		{
-			chi2 = tempChi2 ;
-			goodPair = pair ;
-		}
-	}
-
-	return goodPair ;
-	*/
 }
 
 std::pair<DiJet,DiJet> HiggsProcessor::choosePairOfZDiJets(const std::vector<fastjet::PseudoJet>& jets)

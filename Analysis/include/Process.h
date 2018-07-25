@@ -26,7 +26,7 @@ struct Process
 		std::map<Polarisation , unsigned int> nTotal = {} ;
 
 		static std::string getProcess(const Event& event) ;
-		static std::string getSubProcess(const Event& event) ;
+		static std::vector<std::string> getSubProcess(const Event& event) ;
 };
 
 struct ChannelInfo
@@ -111,15 +111,15 @@ struct HiggsDecayMode
 
 static const std::map<std::string , HiggsDecayMode> higgsDecayMap =
 {
-	{ "H->bb"      , { "H->bb"      , 0.578  , 5  , 0} } ,
-	{ "H->cc"      , { "H->cc"      , 0.027  , 4  , 0} } ,
-	{ "H->gg"      , { "H->gg"      , 0.086  , 21 , 0} } ,
-	{ "H->tau tau" , { "H->tau tau" , 0.064  , 15 , 0} } ,
-	{ "H->WW"      , { "H->WW"      , 0.216  , 24 , 0} } ,
-	{ "H->ZZ"      , { "H->ZZ"      , 0.027  , 23 , 0} } ,
-	{ "H->gam gam" , { "H->gam gam" , 0.0023 , 22 , 0} } ,
-	{ "H->Z gam"   , { "H->Z gam"   , 0.0016 , 25 , 0} } ,
-	{ "H->inv"     , { "H->inv"     , 0.001  , 23 , 7} }
+	{ "H->b#bar{b}"     , { "H->b#bar{b}"     , 0.5781 , 5  , 0} } ,
+	{ "H->c#bar{c}"     , { "H->c#bar{c}"     , 0.0268 , 4  , 0} } ,
+	{ "H->gg"           , { "H->gg"           , 0.0856 , 21 , 0} } ,
+	{ "H->#tau#tau"     , { "H->#tau#tau"     , 0.0637 , 15 , 0} } ,
+	{ "H->WW"           , { "H->WW"           , 0.2160 , 24 , 0} } ,
+	{ "H->ZZ"           , { "H->ZZ"           , 0.0267 , 23 , 0} } ,
+	{ "H->#gamma#gamma" , { "H->#gamma#gamma" , 0.0023 , 22 , 0} } ,
+	{ "H->Z#gamma"      , { "H->Z#gamma"      , 0.0016 , 25 , 0} } ,
+	{ "H->ZZ->vvvv"     , { "H->ZZ->vvvv"     , 0.0011 , 23 , 7} }
 } ;
 
 #endif //Process_h

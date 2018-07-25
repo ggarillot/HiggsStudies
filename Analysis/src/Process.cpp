@@ -22,22 +22,22 @@ std::string Process::getProcess(const Event& event)
 	if ( signal.count(event.processID) )
 		return std::string("ZH") ;
 	else if ( qqqq.count(event.processID) )
-		return std::string("qqqq") ;
+		return std::string("q#bar{q}q#bar{q}") ;
 	else if ( qqlv.count(event.processID) )
-		return std::string("qqlv") ;
+		return std::string("q#bar{q}l#nu") ;
 	else if ( qq.count(event.processID) )
-		return std::string("qq") ;
+		return std::string("q#bar{q}") ;
 	else if ( event.processID == 106575 || event.processID == 106576 )
 	{
 		if ( event.decayID%2 == 0 )
-			return std::string("qqvv") ;
+			return std::string("q#bar{q}#nu#nu") ;
 		else
-			return std::string("qqll") ;
+			return std::string("q#bar{q}ll") ;
 	}
 	else if ( event.processID == 106560 || event.processID == 106562 || event.processID == 106559 || event.processID == 106561 )
-		return std::string("qqll") ;
+		return std::string("q#bar{q}ll") ;
 	else if ( event.processID == 106571 || event.processID == 106572 )
-		return std::string("qqvv") ;
+		return std::string("q#bar{q}#nu#nu") ;
 	else
 	{
 		std::cout << "Process::Error in getProcess : processID = " << event.processID << std::endl ;
@@ -45,61 +45,62 @@ std::string Process::getProcess(const Event& event)
 	}
 }
 
-std::string Process::getSubProcess(const Event& event)
+std::vector<std::string> Process::getSubProcess(const Event& event)
 {
 	const std::set<int> signal = { 106485 , 106486 , 108015 , 108016 , 108079 , 108080 , 108031 , 108032 , 108047 , 108048 , 108063 , 108064 , 106525 , 106526 } ;
 
 	if ( !signal.count(event.processID) )
-		throw ;
+		return {} ;
+//		throw ;
 
 	if ( event.decayID == 1 )
-		return std::string("H->dd") ;
+		return { std::string("H->q#bar{q}/gg") , std::string("H->d#bar{d}") } ;
 	else if ( event.decayID == 3 )
-		return std::string("H->ss") ;
+		return { std::string("H->q#bar{q}/gg") , std::string("H->s#bar{s}") } ;
 	else if ( event.decayID == 4 )
-		return std::string("H->cc") ;
+		return { std::string("H->q#bar{q}/gg") , std::string("H->c#bar{c}") } ;
 	else if ( event.decayID == 5 )
-		return std::string("H->bb") ;
+		return { std::string("H->q#bar{q}/gg") , std::string("H->b#bar{b}") } ;
 	else if ( event.decayID == 11 )
-		return std::string("H->ee") ;
+		return { std::string("H->ee") } ;
 	else if ( event.decayID == 13 )
-		return std::string("H->mu mu") ;
+		return { std::string("H->#mu#mu") } ;
 	else if ( event.decayID == 15 )
-		return std::string("H->tau tau") ;
+		return { std::string("H->#tau#tau") } ;
 	else if ( event.decayID == 21 )
-		return std::string("H->gg") ;
+		return { std::string("H->q#bar{q}/gg") , std::string("H->gg") } ;
 	else if ( event.decayID == 22 )
-		return std::string("H->gam gam") ;
+		return { std::string("H->#gamma#gamma") } ;
 	else if ( event.decayID == 23 )
 	{
 		if ( event.subDecayID == 1 )
-			return std::string("H->ZZ->qqqq") ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->qqqq") } ;
 		else if ( event.subDecayID > 20 && event.subDecayID < 24 )
-			return std::string("H->ZZ->qqll") ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->qqll") } ;
 		else if ( event.subDecayID == 4 )
-			return std::string("H->ZZ->qqvv") ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->qqvv") } ;
 		else if ( event.subDecayID > 500 && event.subDecayID < 540 )
-			return std::string("H->ZZ->llll") ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->llll") } ;
 		else if ( event.subDecayID > 600 )
-			return std::string("H->ZZ->llvv") ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->llvv") } ;
 		else if ( event.subDecayID == 7 )
-			return std::string("H->ZZ->vvvv") ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->vvvv") } ;
 		else
 			throw ;
 	}
 	else if ( event.decayID == 24 )
 	{
 		if ( event.subDecayID == 1 )
-			return std::string("H->WW->qqqq") ;
+			return { std::string("H->WW") , std::string("H->WW->qqqq") } ;
 		else if ( event.subDecayID > 30 && event.subDecayID < 34 )
-			return std::string("H->WW->qqlv") ;
+			return { std::string("H->WW") , std::string("H->WW->qqlv") } ;
 		else if ( event.subDecayID > 600 )
-			return std::string("H->WW->lvlv") ;
+			return { std::string("H->WW") , std::string("H->WW->lvlv") } ;
 		else
 			throw ;
 	}
 	else if ( event.decayID == 25 )
-		return std::string("H->Z gam") ;
+		return { std::string("H->Z#gamma") } ;
 	else
 	{
 		std::cout << "getSubProcess error : " << event.processID << " " << event.decayID << " " << event.subDecayID << std::endl ;
