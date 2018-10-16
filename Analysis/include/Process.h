@@ -54,7 +54,7 @@ static const std::map<int , ChannelInfo> ChannelInfoMap =
 	{ 106573 , {106573 , 1402.0553 , LR} } ,
 	{ 106574 , {106574 , 604.97119 , RL} } ,
 
-	//ZZ->qqlv
+	//ZZ->qqll
 	{ 106575 , {106575 , 1422.1429 , LR} } ,
 	{ 106576 , {106576 , 713.52633 , RL} } ,
 
@@ -119,7 +119,7 @@ static const std::map<std::string , HiggsDecayMode> higgsDecayMap =
 	{ "H->ZZ"           , { "H->ZZ"           , 0.0267 , 23 , 0} } ,
 	{ "H->#gamma#gamma" , { "H->#gamma#gamma" , 0.0023 , 22 , 0} } ,
 	{ "H->Z#gamma"      , { "H->Z#gamma"      , 0.0016 , 25 , 0} } ,
-	{ "H->ZZ->vvvv"     , { "H->ZZ->vvvv"     , 0.0011 , 23 , 7} }
+	{ "H->ZZ->#nu#nu#nu#nu"     , { "H->ZZ->#nu#nu#nu#nu"     , 0.0011 , 23 , 7} }
 } ;
 
 #endif //Process_h

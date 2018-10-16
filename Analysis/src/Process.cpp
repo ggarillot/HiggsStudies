@@ -84,7 +84,7 @@ std::vector<std::string> Process::getSubProcess(const Event& event)
 		else if ( event.subDecayID > 600 )
 			return { std::string("H->ZZ") , std::string("H->ZZ->llvv") } ;
 		else if ( event.subDecayID == 7 )
-			return { std::string("H->ZZ") , std::string("H->ZZ->vvvv") } ;
+			return { std::string("H->ZZ") , std::string("H->ZZ->#nu#nu#nu#nu") } ;
 		else
 			throw ;
 	}

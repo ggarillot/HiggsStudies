@@ -237,7 +237,7 @@ int main ( int argc , char** argv )
 						continue ;
 					for ( const auto& decay : higgsDecayMap )
 					{
-						if ( decay.first == std::string("H->ZZ->vvvv") )
+						if ( decay.first == std::string("H->ZZ->#nu#nu#nu#nu") )
 						{
 							if ( event.decayID == 23 && event.subDecayID == 7 )
 								nEventsDifferentSM[decay.first] += weight*weightsDifferentSM.at(decay.first)[0] ;
